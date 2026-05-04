@@ -1,0 +1,15 @@
+name: organiseMyGroceries
+purpose: Safely turn a user-maintained grocery list into reviewed Tesco basket actions.
+audience:
+  - Individual grocery shoppers
+scope:
+  - Validate JSON and text shopping lists
+  - Preview and add active items to Tesco
+  - Convert and export lists beneath output
+risks:
+  - Tesco selectors may change without notice
+  - Shopping lists contain personal purchasing information
+  - The first search result may not be the desired product
+milestones:
+  - name: Instruction alignment
+    status: completed

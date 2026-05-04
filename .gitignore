@@ -1,0 +1,9 @@
+__pycache__/
+.coverage
+.pytest_cache/
+logs/
+output/
+*.log
+*.pyc
+shoppingList.json
+shoppingList.txt

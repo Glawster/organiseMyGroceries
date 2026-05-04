@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "organise-my-groceries"
+version = "0.1.0"
+description = "Safely add a structured grocery list to a Tesco basket"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "organiseMyProjects",
+    "playwright>=1.54,<2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=25.1,<26",
+    "pre-commit>=4.2,<5",
+    "pytest>=9,<10",
+    "pytest-cov>=6,<7",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+target-version = ["py310"]
