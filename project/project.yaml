@@ -1,15 +1,40 @@
 name: organiseMyGroceries
-purpose: Safely turn a user-maintained grocery list into reviewed Tesco basket actions.
+purpose: Provide a safe shared grocery catalogue and independent user shopping lists that can assist family users with reviewed Tesco shopping actions from different locations.
 audience:
   - Individual grocery shoppers
+  - Family members using independent shopping lists
 scope:
-  - Validate JSON and text shopping lists
-  - Preview and add active items to Tesco
-  - Convert and export lists beneath output
+  - Maintain a shared grocery catalogue
+  - Maintain independent per-user shopping lists
+  - Provide a browser-based multi-user application
+  - Generate reviewed Tesco UK search actions
+  - Authenticate and isolate users before public Internet deployment
+  - Deploy securely to the selected 123-reg hosting environment
 risks:
-  - Tesco selectors may change without notice
+  - Tesco URLs, selectors, and browser behaviour may change without notice
   - Shopping lists contain personal purchasing information
-  - The first search result may not be the desired product
+  - The first Tesco search result may not be the desired product
+  - JSON persistence may become unsuitable for concurrent multi-user writes
+  - Public hosting introduces authentication, session, backup, and operational security responsibilities
 milestones:
   - name: Instruction alignment
     status: completed
+    requirement: 001
+  - name: Grocery catalogue
+    status: todo
+    requirement: 002
+  - name: User shopping lists
+    status: todo
+    requirement: 003
+  - name: Grocery web application
+    status: todo
+    requirement: 004
+  - name: Tesco integration
+    status: todo
+    requirement: 005
+  - name: Authentication and user isolation
+    status: todo
+    requirement: 006
+  - name: Production deployment
+    status: todo
+    requirement: 007
