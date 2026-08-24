@@ -6,6 +6,8 @@ from typing import Any
 
 from organiseMyProjects.logUtils import getLogger
 
+from organiseMyGroceries.files import outputResolve, sourceValidate, textLinesRead
+
 logger = getLogger()
 
 
@@ -15,9 +17,9 @@ logger = getLogger()
 def listConvert(sourcePath: Path, outputDirectory: Path, dryRun: bool = False) -> Path:
     """Convert a plain-text shopping list to the standard JSON schema."""
 
-    source = _sourceValidate(sourcePath, {".txt"})
-    output = _outputResolve(outputDirectory, source.stem, ".json")
-    lines = [line.strip() for line in source.read_text().splitlines() if line.strip()]
+    source = sourceValidate(sourcePath, {".txt"})
+    output = outputResolve(outputDirectory, source.stem, ".json")
+    lines = textLinesRead(source)
     records = [_recordBuild(index, line) for index, line in enumerate(lines, start=1)]
 
     logger.action("writing converted shopping list")
@@ -32,9 +34,9 @@ def listConvert(sourcePath: Path, outputDirectory: Path, dryRun: bool = False) -
 def listExport(sourcePath: Path, outputDirectory: Path, dryRun: bool = False) -> Path:
     """Export active JSON shopping-list entries to a plain-text file."""
 
-    source = _sourceValidate(sourcePath, {".json"})
+    source = sourceValidate(sourcePath, {".json"})
     items = _itemsRead(source)
-    output = _outputResolve(outputDirectory, source.stem, ".txt")
+    output = outputResolve(outputDirectory, source.stem, ".txt")
 
     logger.action("writing text shopping list")
     logger.value("output", output)
@@ -50,15 +52,13 @@ def listLoad(
 ) -> list[str]:
     """Load active search terms from a JSON or text shopping list."""
 
-    source = _sourceValidate(sourcePath, {".json", ".txt"})
+    source = sourceValidate(sourcePath, {".json", ".txt"})
     if source.suffix.lower() == ".txt":
         # Conversion is a user-visible derived artifact, but loading does not
         # depend on writing it, so preview mode remains free of side effects.
         if not dryRun:
             listConvert(source, outputDirectory)
-        return [
-            line.strip() for line in source.read_text().splitlines() if line.strip()
-        ]
+        return textLinesRead(source)
     return _itemsRead(source)
 
 
@@ -104,28 +104,3 @@ def _recordBuild(index: int, name: str) -> dict[str, Any]:
         "notes": "",
         "active": True,
     }
-
-
-## paths
-
-
-def _outputResolve(directory: Path, stem: str, suffix: str) -> Path:
-    """Resolve a generated artifact beneath the project output directory."""
-
-    outputRoot = Path("output").resolve()
-    directoryPath = directory.resolve()
-    if directoryPath != outputRoot:
-        raise ValueError(f"output directory must be '{outputRoot}'")
-    return directoryPath / f"{stem}{suffix}"
-
-
-def _sourceValidate(sourcePath: Path, suffixes: set[str]) -> Path:
-    """Validate and resolve a user-provided source file."""
-
-    source = sourcePath.expanduser().resolve()
-    if not source.is_file():
-        raise ValueError(f"source file does not exist: '{sourcePath}'")
-    if source.suffix.lower() not in suffixes:
-        expected = ", ".join(sorted(suffixes))
-        raise ValueError(f"source '{sourcePath}' must use one of: {expected}")
-    return source

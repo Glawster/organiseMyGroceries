@@ -21,7 +21,7 @@ milestones:
     status: completed
     requirement: 001
   - name: Grocery catalogue
-    status: todo
+    status: completed
     requirement: 002
   - name: User shopping lists
     status: todo

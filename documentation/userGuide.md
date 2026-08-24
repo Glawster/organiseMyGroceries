@@ -1,5 +1,24 @@
 # User guide
 
+## Shared grocery catalogue
+
+The catalogue is the master list of groceries that may be selected later. It is
+not a shopping list: it has no quantities or per-user selections.
+
+Import a one-item-per-line text file. Preview is the default:
+
+```bash
+python main.py catalogue import --source groceries.txt
+python main.py catalogue import --source groceries.txt --confirm
+```
+
+Confirmed import writes `output/catalogue.json`. Re-running import against that
+file keeps existing identifiers and appends only new unique names. Duplicate
+source lines are reported and stored once. Blank lines and extra whitespace are
+ignored; product wording such as `Semi Skimmed Milk 2L` is preserved.
+
+See [Grocery catalogue](groceryCatalogue/README.md) for the document fields.
+
 ## Shopping-list formats
 
 The `add` command accepts JSON and plain text. JSON is preferred because it can

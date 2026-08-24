@@ -1,5 +1,6 @@
 """Tests for command parsing and top-level orchestration."""
 
+import json
 from pathlib import Path
 
 import main
@@ -50,5 +51,61 @@ def testCliRunReturnsFailureForMissingSource(tmp_path) -> None:
     """Input validation failures become a non-zero CLI status."""
 
     status = main.cliRun(["add", "--source", str(tmp_path / "missing.json")])
+
+    assert status == 1
+
+
+def testCliBuildParserSupportsCatalogueImport() -> None:
+    """The catalogue import command is nested and safe by default."""
+
+    args = main.cliBuildParser().parse_args(
+        ["catalogue", "import", "--source", "groceries.txt"]
+    )
+
+    assert args.action == "catalogue"
+    assert args.catalogueAction == "import"
+    assert args.source == Path("groceries.txt")
+    assert args.confirm is False
+
+
+def testCliRunCatalogueImportDryRunDoesNotWrite(tmp_path, monkeypatch) -> None:
+    """Preview catalogue import validates source text without writing JSON."""
+
+    monkeypatch.chdir(tmp_path)
+    source = tmp_path / "groceries.txt"
+    source.write_text("Apples\n")
+
+    status = main.cliRun(["catalogue", "import", "--source", str(source)])
+
+    assert status == 0
+    assert not (tmp_path / "output" / "catalogue.json").exists()
+
+
+def testCliRunCatalogueImportConfirmedWritesCatalogue(tmp_path, monkeypatch) -> None:
+    """The production CLI path writes a validated catalogue under output/."""
+
+    monkeypatch.chdir(tmp_path)
+    source = tmp_path / "groceries.txt"
+    source.write_text("Apples\nApples\nMilk\n")
+
+    status = main.cliRun(["catalogue", "import", "--source", str(source), "--confirm"])
+
+    document = json.loads((tmp_path / "output" / "catalogue.json").read_text())
+    assert status == 0
+    assert [item["name"] for item in document["items"]] == ["Apples", "Milk"]
+    assert document["items"][0]["id"] == "item-001"
+    assert "quantity" not in document["items"][0]
+
+
+def testCliRunCatalogueImportReturnsFailureForMissingSource(
+    tmp_path, monkeypatch
+) -> None:
+    """Catalogue import failures become a non-zero CLI status."""
+
+    monkeypatch.chdir(tmp_path)
+
+    status = main.cliRun(
+        ["catalogue", "import", "--source", str(tmp_path / "missing.txt")]
+    )
 
     assert status == 1

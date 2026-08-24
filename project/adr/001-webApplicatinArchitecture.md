@@ -67,7 +67,7 @@ Rejected from the initial web architecture. The application should assist users 
 
 ## Related requirements
 
-- [002 — Grocery Catalogue](../requirements/features/002-groceryCatelogue.md)
+- [002 — Grocery Catalogue](../requirements/features/002-groceryCatalogue.md) (schema: [ADR-002](002-groceryCatalogueSchema.md))
 - [003 — User Shopping Lists](../requirements/features/003-userShoppingLists.md)
 - [004 — Grocery Web Application](../requirements/features/004-groceryWebApplication.md)
 - [005 — Tesco Integration](../requirements/features/005-tescoIntegration.md)

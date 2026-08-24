@@ -3,7 +3,7 @@
 import argparse
 import sys
 from pathlib import Path
-from typing import Sequence
+from typing import Any, Sequence
 
 from organiseMyProjects.logUtils import getLogger, setApplication
 
@@ -15,6 +15,7 @@ logger = getLogger(includeConsole=False)
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 # Application modules are imported only after the logging context is ready.
+from organiseMyGroceries.catalogue import catalogueImport
 from organiseMyGroceries.shoppingList import listExport, listLoad
 from organiseMyGroceries.tesco import basketAdd
 
@@ -29,12 +30,14 @@ def cliBuildParser() -> argparse.ArgumentParser:
     """Build the command-line parser."""
 
     parser = argparse.ArgumentParser(
-        description="Add grocery-list items to a Tesco basket"
+        description="Manage a grocery catalogue and Tesco shopping lists"
     )
     parser.add_argument(
         "--version", action="version", version=f"%(prog)s {APPLICATION_VERSION}"
     )
     subparsers = parser.add_subparsers(dest="action", required=True)
+
+    _catalogueParserAdd(subparsers)
 
     addParser = subparsers.add_parser("add", help="add active items to Tesco")
     addParser.add_argument(
@@ -64,6 +67,33 @@ def cliBuildParser() -> argparse.ArgumentParser:
     return parser
 
 
+def _catalogueParserAdd(subparsers: Any) -> None:
+    """Add the catalogue object and its import action."""
+
+    catalogueParser = subparsers.add_parser(
+        "catalogue", help="manage the shared grocery catalogue"
+    )
+    catalogueSubparsers = catalogueParser.add_subparsers(
+        dest="catalogueAction", required=True
+    )
+    importParser = catalogueSubparsers.add_parser(
+        "import", help="import a text grocery list into the catalogue"
+    )
+    importParser.add_argument(
+        "-s",
+        "--source",
+        type=Path,
+        required=True,
+        help="one-item-per-line grocery text file",
+    )
+    importParser.add_argument(
+        "-y",
+        "--confirm",
+        action="store_true",
+        help="write output/catalogue.json (default is dry-run)",
+    )
+
+
 def cliRun(arguments: Sequence[str] | None = None) -> int:
     """Run the requested command and return a process exit status."""
 
@@ -79,6 +109,8 @@ def cliRun(arguments: Sequence[str] | None = None) -> int:
     try:
         if args.action == "export":
             listExport(args.source, Path("output"), dryRun=dryRun)
+        elif args.action == "catalogue":
+            catalogueImport(args.source, Path("output"), dryRun=dryRun)
         else:
             items = listLoad(args.source, Path("output"), dryRun=dryRun)
             logger.value("items found", len(items))

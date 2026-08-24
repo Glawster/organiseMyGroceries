@@ -8,18 +8,23 @@ The existing CLI remains the current implemented application while requirements 
 
 - [User guide](documentation/userGuide.md)
 - [Architecture](documentation/architecture.md)
+- [Grocery catalogue](documentation/groceryCatalogue/README.md)
 - [Security and privacy model](documentation/securityModel.md)
 - [Testing process](documentation/testingProcess.md)
 - [Current increment](project/currentIncrement.md)
 - [Requirements and status](project/requirements/README.md)
 - [ADR-001 — Web application architecture](project/adr/001-webApplicatinArchitecture.md)
+- [ADR-002 — Grocery catalogue schema](project/adr/002-groceryCatalogueSchema.md)
 - [Repository layout](.github/repositoryLayout.md)
 - [Requirements process](.github/requirementsManagement.md)
 - [Release process](.github/howToRelease.md)
 
 ## Current status
 
-Requirement 001 (OMP alignment) is complete. Requirement 002 (Grocery Catalogue) is the next implementation increment. Requirements 003–007 cover independent user lists, the web application, Tesco integration, authentication/user isolation, and production deployment respectively.
+Requirements 001 (OMP alignment) and 002 (Grocery Catalogue) are complete. The
+shared catalogue can be imported from a plain-text grocery list and loaded
+without a UI. Requirement 003 (User Shopping Lists) is the next implementation
+increment.
 
 See [Current increment](project/currentIncrement.md) for the active scope and [Requirements and status](project/requirements/README.md) for the full backlog and agent prompts.
 
@@ -31,6 +36,12 @@ Conda is the preferred environment manager:
 conda env create -f environment.yml
 conda activate organiseMyGroceries
 playwright install chromium
+```
+
+Preview a catalogue import without writing JSON:
+
+```bash
+python main.py catalogue import --source groceries.txt
 ```
 
 Preview a list without opening a browser:
