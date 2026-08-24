@@ -22,7 +22,7 @@ None.
 | Req ID | Requirement | Description | Agent Prompt | Architecture Decisions |
 | --- | --- | --- | --- | --- |
 | 001 | [Align agent instructions](features/001-alignAgentInstructions.md) | Align structure, safety, documentation, and tests with OMP 0.5. | [Prompt](prompt/001-alignAgentInstructions.md) | Not required |
-| 002 | [Grocery Catalogue](features/002-groceryCatalogue.md) | Create the persistent shared catalogue and repeatable import path. | [Prompt](prompt/002-groceryCatalogue.md) | [ADR-001](../adr/001-webApplicatinArchitecture.md), [ADR-002](../adr/002-groceryCatalogueSchema.md) |
+| 002 | [Grocery Catalogue](features/002-groceryCatalogue.md) | Create the persistent shared catalogue and repeatable import path. | [Prompt](prompt/002-groceryCatalogue.md) | [ADR-001](../adr/001-webApplicationArchitecture.md), [ADR-002](../adr/002-groceryCatalogueSchema.md) |
 
 ## Sequencing
 

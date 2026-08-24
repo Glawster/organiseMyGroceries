@@ -25,6 +25,6 @@ Use the [002 agent prompt](requirements/prompt/002-groceryCatalogue.md) for impl
 3. [006 — Authentication and User Isolation](requirements/features/006-authentication.md)
 4. [007 — Production Deployment](requirements/features/007-deployment.md)
 
-See [ADR-001](adr/001-webApplicatinArchitecture.md) and
+See [ADR-001](adr/001-webApplicationArchitecture.md) and
 [ADR-002](adr/002-groceryCatalogueSchema.md) for the architecture and catalogue
 schema these increments depend on.

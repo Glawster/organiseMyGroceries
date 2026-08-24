@@ -56,7 +56,7 @@ The catalogue represents groceries that may be selected by any user. It must be 
 
 ## Dependencies and decisions
 
-- [ADR-001 — Web application architecture](../../adr/001-webApplicatinArchitecture.md)
+- [ADR-001 — Web application architecture](../../adr/001-webApplicationArchitecture.md)
 - [ADR-002 — Grocery catalogue schema](../../adr/002-groceryCatalogueSchema.md)
 
 ## Verification

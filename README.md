@@ -13,11 +13,11 @@ The existing CLI remains the current implemented application while requirements 
 - [Testing process](documentation/testingProcess.md)
 - [Current increment](project/currentIncrement.md)
 - [Requirements and status](project/requirements/README.md)
-- [ADR-001 — Web application architecture](project/adr/001-webApplicatinArchitecture.md)
+- [ADR-001 — Web application architecture](project/adr/001-webApplicationArchitecture.md)
 - [ADR-002 — Grocery catalogue schema](project/adr/002-groceryCatalogueSchema.md)
-- [Repository layout](.github/repositoryLayout.md)
-- [Requirements process](.github/requirementsManagement.md)
-- [Release process](.github/howToRelease.md)
+- [Repository layout](documentation/repositoryLayout.md)
+- [Requirements process](documentation/requirementsManagement.md)
+- [Release process](documentation/howToRelease.md)
 
 ## Current status
 
@@ -41,26 +41,26 @@ playwright install chromium
 The CLI is an installed console script. After the Conda environment is active:
 
 ```bash
-organiseMyGroceries --help
+groceries --help
 python -m organiseMyGroceries --help
 ```
 
 Preview a catalogue import without writing JSON:
 
 ```bash
-organiseMyGroceries catalogue import --source groceries.txt
+groceries catalogue import --source groceries.txt
 ```
 
 Preview a list without opening a store:
 
 ```bash
-organiseMyGroceries list add --source shoppingList.json
+groceries list add --source shoppingList.json
 ```
 
 After reviewing the item count, add the items with the current store adapter (Tesco):
 
 ```bash
-organiseMyGroceries list add --source shoppingList.json --confirm
+groceries list add --source shoppingList.json --confirm
 ```
 
 Authentication for the existing Playwright workflow remains a manual browser step. See the [user guide](documentation/userGuide.md) for formats, export commands, and failure behaviour.
@@ -74,4 +74,4 @@ pytest
 black --check organiseMyGroceries tests
 ```
 
-Project state, architecture decisions, and traceability are maintained under `project/` in accordance with the [repository layout](.github/repositoryLayout.md).
+Project state, architecture decisions, and traceability are maintained under `project/` in accordance with the [repository layout](documentation/repositoryLayout.md).

@@ -56,4 +56,4 @@ persistence stays behind the catalogue module.
 
 - [002 — Grocery Catalogue](../requirements/features/002-groceryCatalogue.md)
 - [003 — User Shopping Lists](../requirements/features/003-userShoppingLists.md)
-- [ADR-001 — Web Application Architecture](001-webApplicatinArchitecture.md)
+- [ADR-001 — Web Application Architecture](001-webApplicationArchitecture.md)
