@@ -53,8 +53,6 @@ The catalogue represents groceries that may be selected by any user. It must be 
 * Every catalogue item has a stable identifier.
 * Catalogue loading and validation can be tested without a UI.
 * Re-running an import does not unexpectedly change existing stable identifiers.
-<<<<<<< HEAD
-=======
 
 ## Dependencies and decisions
 
@@ -64,17 +62,17 @@ The catalogue represents groceries that may be selected by any user. It must be 
 ## Verification
 
 - `pytest`
-- `black --check main.py src tests`
+- `black --check organiseMyGroceries tests`
 - Clean-room text import into `output/catalogue.json` via
-  `python main.py catalogue import --source <file> --confirm`
+  `organiseMyGroceries catalogue import --source <file> --confirm`
 - Re-import of the same source preserves existing identifiers
 - Duplicate source names and invalid catalogue documents fail or report as
   specified
 
 ## Traceability
 
-- Implementation: `src/organiseMyGroceries/catalogue.py`,
-  `src/organiseMyGroceries/files.py`, `main.py`
+- Implementation: `organiseMyGroceries/catalogue.py`,
+  `organiseMyGroceries/files.py`, `organiseMyGroceries/main.py`
 - Tests: `tests/test_catalogue.py`, `tests/test_files.py`, `tests/test_main.py`
 - Documentation: `documentation/groceryCatalogue/README.md`,
   `documentation/architecture.md`, `documentation/userGuide.md`
@@ -86,4 +84,4 @@ The catalogue represents groceries that may be selected by any user. It must be 
 
 - 2026-08-24: created from the planned catalogue increment.
 - 2026-08-24: completed with catalogue import, stable identifiers, and tests.
->>>>>>> 3aba81b (feat(002): grocery catalogue)
+- 2026-08-24: packaged CLI as `organiseMyGroceries <object> <action>`.

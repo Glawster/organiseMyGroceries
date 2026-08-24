@@ -47,8 +47,8 @@ explicit.
 Convert a one-item-per-line text grocery list with:
 
 ```bash
-python main.py catalogue import --source groceries.txt
-python main.py catalogue import --source groceries.txt --confirm
+organiseMyGroceries catalogue import --source groceries.txt
+organiseMyGroceries catalogue import --source groceries.txt --confirm
 ```
 
 Preview is the default and writes nothing. Confirmed import writes

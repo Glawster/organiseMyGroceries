@@ -38,33 +38,40 @@ conda activate organiseMyGroceries
 playwright install chromium
 ```
 
+The CLI is an installed console script. After the Conda environment is active:
+
+```bash
+organiseMyGroceries --help
+python -m organiseMyGroceries --help
+```
+
 Preview a catalogue import without writing JSON:
 
 ```bash
-python main.py catalogue import --source groceries.txt
+organiseMyGroceries catalogue import --source groceries.txt
 ```
 
-Preview a list without opening a browser:
+Preview a list without opening a store:
 
 ```bash
-python main.py add --source shoppingList.json
+organiseMyGroceries list add --source shoppingList.json
 ```
 
-After reviewing the item count, open Tesco and add the items:
+After reviewing the item count, add the items with the current store adapter (Tesco):
 
 ```bash
-python main.py add --source shoppingList.json --confirm
+organiseMyGroceries list add --source shoppingList.json --confirm
 ```
 
 Authentication for the existing Playwright workflow remains a manual browser step. See the [user guide](documentation/userGuide.md) for formats, export commands, and failure behaviour.
 
 ## Development
 
-The reusable implementation is in `src/organiseMyGroceries/`; `main.py` only initialises logging and orchestrates the CLI. Run the complete local check with:
+The implementation and CLI live in the `organiseMyGroceries/` package. Run the complete local check with:
 
 ```bash
 pytest
-black --check main.py src tests
+black --check organiseMyGroceries tests
 ```
 
 Project state, architecture decisions, and traceability are maintained under `project/` in accordance with the [repository layout](.github/repositoryLayout.md).

@@ -3,15 +3,18 @@ requires = ["setuptools>=80"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "organise-my-groceries"
-version = "0.1.0"
-description = "Safely add a structured grocery list to a Tesco basket"
+name = "groceries"
+version = "0.1"
+description = "Shared grocery catalogue and shopping-list helper"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "organiseMyProjects",
     "playwright>=1.54,<2",
 ]
+
+[project.scripts]
+groceries = "organiseMyGroceries.cli:main"
 
 [project.optional-dependencies]
 dev = [
@@ -22,7 +25,7 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-where = ["src"]
+include = ["organiseMyGroceries"]
 
 [tool.black]
 target-version = ["py310"]

@@ -2,16 +2,27 @@
 
 ## Responsibilities
 
-`main.py` owns application logging, argument parsing, safe preview behaviour,
-and process exit status. It delegates to package modules:
+`organiseMyGroceries.main` owns application logging, argument parsing, safe
+preview behaviour, and process exit status. It is the packaged console script
+and `python -m organiseMyGroceries` entry point.
+
+Commands follow `application object action`:
+
+```text
+organiseMyGroceries catalogue import
+organiseMyGroceries list add
+organiseMyGroceries list export
+```
+
+`list add` is store-neutral. Tesco is the current store adapter.
 
 ```text
 CLI input
   -> main.py orchestration
   -> catalogue.py shared catalogue import, identity, and validation
   -> shoppingList.py user-list validation and transformation
-  -> tesco.py browser boundary (confirmed add only)
-  -> Tesco website
+  -> tesco.py store adapter (confirmed list add only)
+  -> grocery store website
 ```
 
 `catalogue.py` and `shoppingList.py` have no Playwright or UI dependency and can
