@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.scripts]
-groceries = "organiseMyGroceries.cli:main"
+groceries = "organiseMyGroceries.main:main"
 
 [project.optional-dependencies]
 dev = [
