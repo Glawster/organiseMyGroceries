@@ -85,3 +85,4 @@ The catalogue represents groceries that may be selected by any user. It must be 
 - 2026-08-24: created from the planned catalogue increment.
 - 2026-08-24: completed with catalogue import, stable identifiers, and tests.
 - 2026-08-24: packaged CLI as `organiseMyGroceries <object> <action>`.
+- 2026-08-24: modified app name to `groceries <object> <action>` for clarity.
