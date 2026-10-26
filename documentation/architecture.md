@@ -32,7 +32,7 @@ browser selectors or manual login flow.
 
 The grocery catalogue is shared product data. User shopping lists will reference
 stable catalogue identifiers rather than storing a second copy of product
-definitions. See [Grocery catalogue](groceryCatalogue/README.md) for the JSON
+definitions. See [Grocery catalogue](groceryCatalogue/groceryCatalogueIndex.md) for the JSON
 document, identity, and import rules.
 
 ## Data boundaries

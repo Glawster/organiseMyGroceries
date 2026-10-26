@@ -38,7 +38,7 @@ file keeps existing identifiers and appends only new unique names. Duplicate
 source lines are reported and stored once. Blank lines and extra whitespace are
 ignored; product wording such as `Semi Skimmed Milk 2L` is preserved.
 
-See [Grocery catalogue](groceryCatalogue/README.md) for the document fields.
+See [Grocery catalogue](groceryCatalogue/groceryCatalogueIndex.md) for the document fields.
 
 ## Shopping-list formats
 

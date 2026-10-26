@@ -74,7 +74,7 @@ The catalogue represents groceries that may be selected by any user. It must be 
 - Implementation: `organiseMyGroceries/catalogue.py`,
   `organiseMyGroceries/files.py`, `organiseMyGroceries/main.py`
 - Tests: `tests/test_catalogue.py`, `tests/test_files.py`, `tests/test_main.py`
-- Documentation: `documentation/groceryCatalogue/README.md`,
+- Documentation: `documentation/groceryCatalogue/groceryCatalogueIndex.md`,
   `documentation/architecture.md`, `documentation/userGuide.md`
 - Pull request: pending on `feature/002-grocery-catalogue`
 - Agent runs: 2026-08-24 Grok implementation using

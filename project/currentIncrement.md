@@ -2,7 +2,7 @@
 
 ## Objective
 
-Deliver requirement [002 — Grocery Catalogue](requirements/features/002-groceryCatalogue.md): establish the persistent shared grocery catalogue and a repeatable import path from the existing one-item-per-line grocery list.
+Deliver requirement [003 — User Shopping Lists](requirements/features/003-userShoppingLists.md): persist independent per-user selections against the shared grocery catalogue.
 
 ## Scope
 
@@ -16,7 +16,7 @@ Deliver requirement [002 — Grocery Catalogue](requirements/features/002-grocer
 Ready to start. Requirement 002, the shared grocery catalogue, was completed on
 2026-08-24. The catalogue import path and versioned JSON document are in place.
 
-Use the [002 agent prompt](requirements/prompt/002-groceryCatalogue.md) for implementation handoff.
+Use the [003 agent prompt](requirements/prompt/003-userShoppingLists.md) for implementation handoff.
 
 ## Next increments
 

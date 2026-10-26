@@ -1,4 +1,4 @@
-# Requirements
+# Requirements index
 
 Next available number: 008
 
@@ -6,7 +6,6 @@ Next available number: 008
 
 | Req ID | Requirement | Description | Agent Prompt | Architecture Decisions |
 | --- | --- | --- | --- | --- |
-| 002 | [Grocery Catalogue](features/002-groceryCatalogue.md) | Create the persistent shared catalogue and repeatable import path. | [Prompt](prompt/002-groceryCatalogue.md) | [ADR-001](../adr/001-webApplicatinArchitecture.md) |
 | 003 | [User Shopping Lists](features/003-userShoppingLists.md) | Maintain independent per-user lists over the shared catalogue. | [Prompt](prompt/003-userShoppingLists.md) | [ADR-001](../adr/001-webApplicationArchitecture.md) |
 | 004 | [Grocery Web Application](features/004-groceryWebApplication.md) | Provide the browser application for remote users. | [Prompt](prompt/004-groceryWebApplication.md) | [ADR-001](../adr/001-webApplicationArchitecture.md) |
 | 005 | [Tesco Integration](features/005-tescoIntegration.md) | Keep Tesco search/click-through behind a controlled external boundary. | [Prompt](prompt/005-tescoIntegration.md) | [ADR-001](../adr/001-webApplicationArchitecture.md) |

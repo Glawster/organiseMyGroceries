@@ -8,11 +8,11 @@ The existing CLI remains the current implemented application while requirements 
 
 - [User guide](documentation/userGuide.md)
 - [Architecture](documentation/architecture.md)
-- [Grocery catalogue](documentation/groceryCatalogue/README.md)
+- [Grocery catalogue](documentation/groceryCatalogue/groceryCatalogueIndex.md)
 - [Security and privacy model](documentation/securityModel.md)
 - [Testing process](documentation/testingProcess.md)
 - [Current increment](project/currentIncrement.md)
-- [Requirements and status](project/requirements/README.md)
+- [Requirements and status](project/requirements/requirementsIndex.md)
 - [ADR-001 — Web application architecture](project/adr/001-webApplicationArchitecture.md)
 - [ADR-002 — Grocery catalogue schema](project/adr/002-groceryCatalogueSchema.md)
 - [Repository layout](documentation/repositoryLayout.md)
@@ -26,7 +26,7 @@ shared catalogue can be imported from a plain-text grocery list and loaded
 without a UI. Requirement 003 (User Shopping Lists) is the next implementation
 increment.
 
-See [Current increment](project/currentIncrement.md) for the active scope and [Requirements and status](project/requirements/README.md) for the full backlog and agent prompts.
+See [Current increment](project/currentIncrement.md) for the active scope and [Requirements and status](project/requirements/requirementsIndex.md) for the full backlog and agent prompts.
 
 ## Current CLI quick start
 

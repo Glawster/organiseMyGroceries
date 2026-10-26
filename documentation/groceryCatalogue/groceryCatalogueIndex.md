@@ -1,4 +1,4 @@
-# Grocery catalogue
+# Grocery catalogue index
 
 The catalogue is the shared master list of groceries that any user may select. It
 is independent of an individual shopping list: it does not store who selected an
