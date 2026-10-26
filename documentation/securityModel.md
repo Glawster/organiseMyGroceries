@@ -9,6 +9,10 @@ application.
 ## Controls
 
 - Shopping-list filenames and `output/` are ignored by Git.
+- Real imported catalogues are written under `output/` and must not be
+  committed. Only fictional fixtures belong in `data/groceryCatalogue/`.
+- The catalogue stores shared product data only; user selection and quantity
+  are not valid catalogue fields.
 - Authentication occurs manually in the visible Tesco browser.
 - Preview mode performs no browser or file-write side effects.
 - Input paths and formats are validated before processing.

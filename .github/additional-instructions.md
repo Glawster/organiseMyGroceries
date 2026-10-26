@@ -2,9 +2,11 @@
 
 ## Application boundary
 
-- Keep `main.py` as the standalone application entry point.
-- Put reusable grocery-list behaviour in `src/organiseMyGroceries/`.
-- Keep browser automation isolated in `src/organiseMyGroceries/tesco.py`.
+- The packaged CLI entry point is `organiseMyGroceries` (`python -m organiseMyGroceries`).
+- Keep `main.py` inside the `organiseMyGroceries/` package.
+- Put reusable grocery-list behaviour in `organiseMyGroceries/`.
+- Keep browser automation isolated in `organiseMyGroceries/tesco.py`.
+- Treat `list add` as store-neutral; Tesco is the current store adapter.
 - Treat authentication as a manual user step; never persist Tesco credentials.
 
 ## Generated data

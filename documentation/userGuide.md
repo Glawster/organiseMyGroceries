@@ -1,9 +1,49 @@
 # User guide
 
+## Command shape
+
+Commands are `organiseMyGroceries <object> <action>`. Discover them with
+`--help` at every level. Preview is the default; `-y` / `--confirm` executes.
+
+```text
+organiseMyGroceries catalogue import --source groceries.txt
+organiseMyGroceries list add --source shoppingList.json
+organiseMyGroceries list export --source shoppingList.json
+```
+
+`list add` is store-neutral. Tesco is the current store adapter; other stores
+may be added later without changing the command.
+
+Equivalent entry points:
+
+```bash
+organiseMyGroceries --help
+python -m organiseMyGroceries --help
+```
+
+## Shared grocery catalogue
+
+The catalogue is the master list of groceries that may be selected later. It is
+not a shopping list: it has no quantities or per-user selections.
+
+Import a one-item-per-line text file. Preview is the default:
+
+```bash
+organiseMyGroceries catalogue import --source groceries.txt
+organiseMyGroceries catalogue import --source groceries.txt --confirm
+```
+
+Confirmed import writes `output/catalogue.json`. Re-running import against that
+file keeps existing identifiers and appends only new unique names. Duplicate
+source lines are reported and stored once. Blank lines and extra whitespace are
+ignored; product wording such as `Semi Skimmed Milk 2L` is preserved.
+
+See [Grocery catalogue](groceryCatalogue/groceryCatalogueIndex.md) for the document fields.
+
 ## Shopping-list formats
 
-The `add` command accepts JSON and plain text. JSON is preferred because it can
-disable items and provide Tesco-specific search terms.
+`list add` accepts JSON and plain text. JSON is preferred because it can
+disable items and provide store-specific search terms.
 
 ```json
 [
@@ -25,18 +65,19 @@ surrounding whitespace are ignored.
 ## Add items
 
 Preview is safe and non-interactive. It validates and counts items but neither
-opens Tesco nor creates output:
+opens a store nor creates output:
 
 ```bash
-python main.py add --source shoppingList.json
-python main.py add --source shoppingList.txt
+organiseMyGroceries list add --source shoppingList.json
+organiseMyGroceries list add --source shoppingList.txt
 ```
 
-Use `--confirm` to execute. The app opens Chromium at Tesco, waits for manual
-login, searches each active term, and selects the first available Add button.
+Use `--confirm` to execute. The current store adapter opens Chromium at Tesco,
+waits for manual login, searches each active term, and selects the first
+available Add button.
 
 ```bash
-python main.py add --source shoppingList.json --confirm
+organiseMyGroceries list add --source shoppingList.json --confirm
 ```
 
 Confirmed text-list input is also converted to `output/<source-name>.json`.
@@ -47,8 +88,8 @@ Generated files never overwrite the source.
 Export active JSON entries to `output/<source-name>.txt`:
 
 ```bash
-python main.py export shoppingList.json
-python main.py export shoppingList.json --confirm
+organiseMyGroceries list export --source shoppingList.json
+organiseMyGroceries list export --source shoppingList.json --confirm
 ```
 
 The first command previews the operation. Only the confirmed command writes the

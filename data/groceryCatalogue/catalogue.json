@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "id": "item-001",
+      "name": "Apples",
+      "tescoSearch": "Apples",
+      "category": "",
+      "preferredProduct": "",
+      "notes": "",
+      "active": true
+    },
+    {
+      "id": "item-002",
+      "name": "Semi Skimmed Milk 2L",
+      "tescoSearch": "Semi Skimmed Milk 2L",
+      "category": "",
+      "preferredProduct": "",
+      "notes": "",
+      "active": true
+    },
+    {
+      "id": "item-003",
+      "name": "Tesco Italian Roast & Ground Coffee",
+      "tescoSearch": "Tesco Italian Roast & Ground Coffee",
+      "category": "",
+      "preferredProduct": "",
+      "notes": "",
+      "active": true
+    },
+    {
+      "id": "item-004",
+      "name": "Heinz No Added Sugar Cream of Tomato Soup",
+      "tescoSearch": "Heinz No Added Sugar Cream of Tomato Soup",
+      "category": "",
+      "preferredProduct": "",
+      "notes": "",
+      "active": true
+    },
+    {
+      "id": "item-005",
+      "name": "Bananas",
+      "tescoSearch": "Bananas",
+      "category": "",
+      "preferredProduct": "",
+      "notes": "",
+      "active": true
+    }
+  ]
+}

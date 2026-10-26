@@ -7,6 +7,7 @@ import os
 
 from organiseMyProjects.fixMarkup import markupFix
 from organiseMyProjects.guiNamingLinter import lintFile, lintGuiNaming
+from organiseMyProjects.logUtils import setApplication
 
 
 def _lintTarget(target: str) -> None:
@@ -20,6 +21,7 @@ def _lintTarget(target: str) -> None:
 
 def main() -> None:
 
+    setApplication("organisemygroceries")
     parser = argparse.ArgumentParser(
         description="Run GUI naming linting and optional markup linting"
     )
