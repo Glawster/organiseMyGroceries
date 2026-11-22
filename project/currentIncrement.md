@@ -7,6 +7,7 @@ Deliver requirement [003 — User Shopping Lists](requirements/features/003-user
 ## Scope
 
 - Import a text list into `output/<list>.json` with `groceries list import`.
+- Keep several named lists and choose between them in a list picker.
 - Edit a JSON list (add, edit, activate/deactivate, remove, save) with
   `groceries --ui`, using the shared OMP TUI theme.
 - Keep one user's list document from affecting another.
@@ -15,10 +16,10 @@ Deliver requirement [003 — User Shopping Lists](requirements/features/003-user
 
 ## Status
 
-In progress on branch `feature/003-userShoppingLists`, started 2026-11-22.
-Sending a list to Tesco was renamed from `list add` to `list send` (ADR-003
-amendment). The list document model, `list import`, and the terminal UI are
-implemented with tests; review and acceptance remain.
+In progress on `release/0.2`, started 2026-11-22. Version 0.2a1 delivered the
+list document model, `list import`, the terminal UI and the `list send` rename
+(ADR-003 amendment). Version 0.2a2 (branch `feature/003-listPicker`) adds named
+lists and the list picker. Review and acceptance remain.
 
 Use the [003 agent prompt](requirements/prompt/003-userShoppingLists.md) for implementation handoff.
 

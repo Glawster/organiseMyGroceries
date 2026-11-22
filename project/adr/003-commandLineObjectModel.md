@@ -72,8 +72,12 @@ groceries list import --source <list>.txt
 ```
 
 The shopping-list terminal UI is opened with the top-level option
-`groceries --ui [<list>.json]` rather than an object/action pair, because it is
-an interactive front end over the `list` actions rather than another action.
+`groceries --ui [<list>]` rather than an object/action pair, because it is an
+interactive front end over the `list` actions rather than another action.
+Without a list it opens a picker over the lists in `output/`.
+
+Until users exist (006), a list is identified by name: `weekly` means
+`output/weekly.json`, and an explicit path is still accepted.
 
 `list add` means adding a catalogue item to a shopping list. It must not mean
 sending the list to Tesco or another external store; that is `list send`.
@@ -231,6 +235,9 @@ remain stable.
   (preview by default, `--confirm` to send).
 - 2026-11-22: added `list import` and the top-level `--ui` option that opens
   the shopping-list terminal UI (Requirement 003).
+- 2026-11-22: lists are identified by name (`output/<name>.json`); `--ui`
+  without a list opens a list picker; `list send` and `list export` require
+  `--source`; `list import` accepts `--output NAME` (Requirement 003).
 
 ## Related requirements and decisions
 

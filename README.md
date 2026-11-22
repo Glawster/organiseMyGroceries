@@ -51,24 +51,26 @@ Preview a catalogue import without writing JSON:
 groceries catalogue import --source groceries.txt
 ```
 
-Import a text shopping list into `output/shoppingList.json`, then edit it in
-the terminal UI:
+Import a text shopping list into `output/weekly.json`, then edit it in the
+terminal UI. Without a list name, `--ui` lets you choose from every list in
+`output/`:
 
 ```bash
-groceries list import --source shoppingList.txt --confirm
-groceries --ui
+groceries list import --source weekly.txt --confirm
+groceries --ui            # choose a list
+groceries --ui weekly     # or open one directly
 ```
 
 Preview the list without opening a store:
 
 ```bash
-groceries list send
+groceries list send --source weekly
 ```
 
 After reviewing the item count, add the items with the current store adapter (Tesco):
 
 ```bash
-groceries list send --confirm
+groceries list send --source weekly --confirm
 ```
 
 Authentication for the existing Playwright workflow remains a manual browser step. See the [user guide](documentation/userGuide.md) for formats, export commands, and failure behaviour.

@@ -56,13 +56,28 @@ def testCliBuildParserSupportsListExport() -> None:
     assert args.confirm is False
 
 
-def testCliBuildParserListSendDefaultsSource() -> None:
-    """List send keeps the historical default shopping-list path."""
+def testCliBuildParserListSendRequiresSource() -> None:
+    """List send acts on one specific list, so the list must be named."""
 
-    args = main.cliBuildParser().parse_args(["list", "send"])
+    with pytest.raises(SystemExit):
+        main.cliBuildParser().parse_args(["list", "send"])
+    with pytest.raises(SystemExit):
+        main.cliBuildParser().parse_args(["list", "export"])
 
-    assert args.source == Path("output/shoppingList.json")
-    assert args.confirm is False
+
+def testCliRunListSendResolvesListName(tmp_path, monkeypatch) -> None:
+    """A bare list name means output/<name>.json."""
+
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "output").mkdir()
+    (tmp_path / "output" / "weekly.json").write_text('[{"name": "Milk"}]')
+    loaded: list[Path] = []
+    monkeypatch.setattr(
+        main, "listLoad", lambda source, *_args, **_kw: loaded.append(source) or []
+    )
+
+    assert main.cliRun(["list", "send", "-s", "weekly"]) == 0
+    assert loaded == [Path("output/weekly.json")]
 
 
 def testCliBuildParserRejectsLegacyTopLevelAdd() -> None:
@@ -216,13 +231,52 @@ def testCliRunListImportWritesOnlyWhenConfirmed(tmp_path, monkeypatch) -> None:
     ]
 
 
-def testCliBuildParserUiDefaultsToImportedList() -> None:
-    """--ui alone opens the default list under output/."""
+def testCliRunListImportUsesOutputName(tmp_path, monkeypatch) -> None:
+    """--output names the new list instead of the text file's name."""
+
+    monkeypatch.chdir(tmp_path)
+    source = tmp_path / "list.txt"
+    source.write_text("Milk\n")
+
+    assert main.cliRun(["list", "import", "-s", str(source), "-o", "party", "-y"]) == 0
+    assert (tmp_path / "output" / "party.json").is_file()
+    assert not (tmp_path / "output" / "list.json").exists()
+
+
+def testCliBuildParserUiWithoutListMeansPicker() -> None:
+    """--ui alone asks for the list picker rather than a default file."""
 
     args = main.cliBuildParser().parse_args(["--ui"])
 
-    assert args.ui == Path("output/shoppingList.json")
+    assert args.ui == ""
     assert args.object is None
+
+
+def testCliRunUiWithoutListOpensPicker(monkeypatch) -> None:
+    """--ui alone runs the app with no list, which shows the picker."""
+
+    from organiseMyGroceries.ui import listApp
+
+    ran: list[object] = []
+    monkeypatch.setattr(listApp.ListApp, "run", lambda self: ran.append(self.listPath))
+
+    assert main.cliRun(["--ui"]) == 0
+    assert ran == [None]
+
+
+def testCliRunUiResolvesListName(tmp_path, monkeypatch) -> None:
+    """--ui weekly opens output/weekly.json."""
+
+    from organiseMyGroceries.ui import listApp
+
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "output").mkdir()
+    (tmp_path / "output" / "weekly.json").write_text('[{"name": "Milk"}]')
+    ran: list[object] = []
+    monkeypatch.setattr(listApp.ListApp, "run", lambda self: ran.append(self.listPath))
+
+    assert main.cliRun(["--ui", "weekly"]) == 0
+    assert ran == [Path("output/weekly.json")]
 
 
 def testCliRunRequiresCommandOrUi() -> None:

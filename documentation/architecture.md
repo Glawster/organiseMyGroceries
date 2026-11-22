@@ -13,7 +13,7 @@ organiseMyGroceries catalogue import
 organiseMyGroceries list import
 organiseMyGroceries list send
 organiseMyGroceries list export
-organiseMyGroceries --ui
+organiseMyGroceries --ui [LIST]
 ```
 
 `list send` is store-neutral. Tesco is the current store adapter.
@@ -24,15 +24,17 @@ CLI input
   -> catalogue.py shared catalogue import, identity, and validation
   -> shoppingList.py list import, send terms, and text export
   -> listDocument.py JSON list model: load, validate, edit, atomic save
-  -> ui/ Textual terminal UI over listDocument.py (--ui only)
+  -> listLibrary.py named lists under output/ (name resolution, summaries)
+  -> ui/ Textual terminal UI: list picker and list editor (--ui only)
   -> tesco.py store adapter (confirmed list send only)
   -> grocery store website
 ```
 
 `catalogue.py` and `shoppingList.py` have no Playwright or UI dependency and can
 be tested using local files. Shared path validation lives in `files.py`.
-`listDocument.py` owns every list edit rule, so the terminal UI in `ui/` only
-orchestrates it. The UI loads the shared OMP theme `myStyles.css` for colour and
+`listDocument.py` owns every list edit rule and `listLibrary.py` resolves list
+names, so the terminal UI in `ui/` only
+orchestrates them. The UI loads the shared OMP theme `myStyles.css` for colour and
 `ui/listApp.tcss` for layout, and imports Textual only when `--ui` is used.
 `tesco.py` is the external-system adapter and is the only module that knows
 browser selectors or manual login flow.

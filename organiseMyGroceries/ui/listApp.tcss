@@ -15,6 +15,7 @@
 }
 
 ItemDialog,
+NameDialog,
 ConfirmDialog {
     align: center middle;
 }
@@ -54,4 +55,25 @@ ConfirmDialog {
 
 #item-error.-visible {
     display: block;
+}
+
+#name-box {
+    width: 60;
+    max-width: 100%;
+    height: auto;
+    padding: 1 2;
+}
+
+#name-error {
+    display: none;
+    height: auto;
+    padding: 0 1;
+}
+
+#name-error.-visible {
+    display: block;
+}
+
+#lists {
+    height: 1fr;
 }

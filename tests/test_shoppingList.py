@@ -48,6 +48,30 @@ def testListImportNeverOverwritesExistingList(tmp_path: Path, monkeypatch) -> No
     assert "Edited" in output.read_text()
 
 
+def testListImportUsesGivenName(tmp_path: Path, monkeypatch) -> None:
+    """An explicit name replaces the text file's name."""
+
+    monkeypatch.chdir(tmp_path)
+    source = tmp_path / "list.txt"
+    source.write_text("Milk\n")
+
+    output = shoppingList.listImport(source, Path("output"), name="party")
+
+    assert output == (tmp_path / "output" / "party.json").resolve()
+    assert output.is_file()
+
+
+def testListImportRejectsUnusableName(tmp_path: Path, monkeypatch) -> None:
+    """A name that is not a plain word cannot escape output/."""
+
+    monkeypatch.chdir(tmp_path)
+    source = tmp_path / "list.txt"
+    source.write_text("Milk\n")
+
+    with pytest.raises(ValueError, match="list name"):
+        shoppingList.listImport(source, Path("output"), name="../escape")
+
+
 def testListImportHonoursDryRun(tmp_path: Path, monkeypatch) -> None:
     """Preview import creates neither the output directory nor the list."""
 

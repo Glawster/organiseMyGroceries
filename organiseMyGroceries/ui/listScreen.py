@@ -45,7 +45,7 @@ class ListScreen(Screen[None]):
         Binding("space", "toggle", "Active"),
         Binding("d,delete", "remove", "Remove"),
         Binding("ctrl+s", "save", "Save"),
-        Binding("q", "close", "Quit"),
+        Binding("q", "close", "Close"),
     ]
 
     def __init__(self, listPath: Path, records: list[dict[str, Any]]) -> None:
@@ -87,20 +87,31 @@ class ListScreen(Screen[None]):
 
     ## actions
 
-    def action_close(self) -> None:
-        """Quit, asking first when there are unsaved changes."""
+    def action_close(self, quitApp: bool = False) -> None:
+        """Close the list, asking first when there are unsaved changes.
+
+        Closing returns to whatever opened the list (the list picker, or an
+        exit when the list was named on the command line); ``quitApp`` leaves
+        the application entirely.
+        """
+
+        def _leave() -> None:
+            if quitApp:
+                self.app.exit()
+            else:
+                self.dismiss()
 
         if not self.unsaved:
-            self.app.exit()
+            _leave()
             return
 
-        def _quitConfirmed(confirmed: bool | None) -> None:
+        def _closeConfirmed(confirmed: bool | None) -> None:
             if confirmed:
                 logger.info("discarded unsaved shopping-list changes")
-                self.app.exit()
+                _leave()
 
         self.app.push_screen(
-            ConfirmDialog("Discard unsaved changes and quit?"), _quitConfirmed
+            ConfirmDialog("Discard unsaved changes and close?"), _closeConfirmed
         )
 
     def action_add(self) -> None:

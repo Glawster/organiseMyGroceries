@@ -7,14 +7,16 @@ Commands are `organiseMyGroceries <object> <action>`. Discover them with
 
 ```text
 organiseMyGroceries catalogue import --source groceries.txt
-organiseMyGroceries list import --source shoppingList.txt
-organiseMyGroceries list send --source output/shoppingList.json
-organiseMyGroceries list export --source output/shoppingList.json
+organiseMyGroceries list import --source weekly.txt
+organiseMyGroceries list send --source weekly
+organiseMyGroceries list export --source weekly
 organiseMyGroceries --ui
 ```
 
-List commands default to `output/shoppingList.json`, the list created by
-importing `shoppingList.txt`.
+You can keep as many lists as you like. Each list is a JSON file in `output/`,
+and commands accept a list's name instead of its path: `weekly` means
+`output/weekly.json`. A value with a directory or a `.json`/`.txt` suffix is
+used as a path. List names use letters, digits, `-` and `_`.
 
 `list send` is store-neutral. Tesco is the current store adapter; other stores
 may be added later without changing the command.
@@ -48,24 +50,43 @@ See [Grocery catalogue](groceryCatalogue/groceryCatalogueIndex.md) for the docum
 ## Import a list
 
 Create a JSON shopping list from a one-item-per-line text file. Preview is the
-default; confirming writes `output/<source-name>.json`:
+default. The list is named after the text file unless you give `--output`:
 
 ```bash
-organiseMyGroceries list import --source shoppingList.txt
-organiseMyGroceries list import --source shoppingList.txt --confirm
+organiseMyGroceries list import --source weekly.txt              # preview
+organiseMyGroceries list import --source weekly.txt --confirm    # output/weekly.json
+organiseMyGroceries list import --source list.txt --output party --confirm  # output/party.json
 ```
 
-Import never overwrites an existing JSON list, because it may contain edits
-made in the terminal UI. Move the old list aside to import again.
+Import never overwrites an existing list, because it may contain edits made in
+the terminal UI. Edit the existing list instead, or import under another name
+with `--output`.
 
 ## Edit a list in the terminal UI
 
-Open the list in the terminal UI:
+Open the terminal UI without a list to choose one, or name the list to open it
+directly:
 
 ```bash
-organiseMyGroceries --ui                          # output/shoppingList.json
-organiseMyGroceries --ui output/weeklyShop.json   # another list
+organiseMyGroceries --ui           # choose from the lists in output/
+organiseMyGroceries --ui weekly    # open output/weekly.json
 ```
+
+### Choose a list
+
+The list picker shows each list in `output/` with its item and active counts.
+Other JSON files there, such as the catalogue, are not shown.
+
+| Key | Action |
+| --- | --- |
+| `Enter` or `o` | Open the highlighted list |
+| `n` | Create a new empty list and open it |
+| `q` | Quit |
+
+Closing a list returns to the picker. A list named on the command line closes
+straight back to the terminal.
+
+### Edit the items
 
 The table shows every item. Use the keys or the buttons beneath the table:
 
@@ -76,7 +97,7 @@ The table shows every item. Use the keys or the buttons beneath the table:
 | `space` | Switch the item between active and inactive |
 | `d` or `Delete` | Remove the item (asks first) |
 | `Ctrl+S` | Save the list |
-| `q` | Quit (asks first if there are unsaved changes) |
+| `q` | Close the list (asks first if there are unsaved changes) |
 
 The item form has the item name, quantity, unit, category, store search,
 preferred product and notes. The name is required and the quantity must be a
@@ -84,8 +105,7 @@ whole number of at least 1. An empty store search uses the item name.
 
 Changes are kept in memory until you save. Saving validates the whole list and
 replaces the file in one step. Inactive items stay on the list but are not sent
-to the store. Each person can keep their own list file; editing one never
-changes another.
+to the store. Each list is its own file; editing one never changes another.
 
 The UI uses the shared OMP terminal theme (`myStyles.css`).
 
@@ -117,16 +137,19 @@ Preview is safe and non-interactive. It validates and counts items but neither
 opens a store nor creates output:
 
 ```bash
-organiseMyGroceries list send --source shoppingList.json
-organiseMyGroceries list send --source shoppingList.txt
+organiseMyGroceries list send --source weekly
+organiseMyGroceries list send --source weekly.txt
 ```
+
+`list send` always needs `--source`, because sending changes a real store
+basket and should never pick a list for you.
 
 Use `--confirm` to execute. The current store adapter opens Chromium at Tesco,
 waits for manual login, searches each active term, and selects the first
 available Add button.
 
 ```bash
-organiseMyGroceries list send --source shoppingList.json --confirm
+organiseMyGroceries list send --source weekly --confirm
 ```
 
 Confirmed text-list input is also imported to `output/<source-name>.json`
@@ -134,11 +157,11 @@ unless that list already exists. Generated files never overwrite the source.
 
 ## Export a list
 
-Export active JSON entries to `output/<source-name>.txt`:
+Export active JSON entries to `output/<list-name>.txt`:
 
 ```bash
-organiseMyGroceries list export --source shoppingList.json
-organiseMyGroceries list export --source shoppingList.json --confirm
+organiseMyGroceries list export --source weekly
+organiseMyGroceries list export --source weekly --confirm
 ```
 
 The first command previews the operation. Only the confirmed command writes the

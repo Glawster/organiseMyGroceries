@@ -7,6 +7,7 @@ from organiseMyProjects.logUtils import getLogger
 
 from organiseMyGroceries.files import outputResolve, sourceValidate, textLinesRead
 from organiseMyGroceries.listDocument import listDocumentSave, recordBuild
+from organiseMyGroceries.listLibrary import listNameValidate
 
 logger = getLogger()
 
@@ -30,19 +31,27 @@ def listExport(sourcePath: Path, outputDirectory: Path, dryRun: bool = False) ->
     return output
 
 
-def listImport(sourcePath: Path, outputDirectory: Path, dryRun: bool = False) -> Path:
+def listImport(
+    sourcePath: Path,
+    outputDirectory: Path,
+    dryRun: bool = False,
+    name: str | None = None,
+) -> Path:
     """Import a plain-text shopping list into a new JSON list under output/.
 
-    An existing JSON list is never overwritten because it may hold edits made
-    in the terminal UI; the user must move it aside to import again.
+    The list is named after the text file unless ``name`` is given. An
+    existing JSON list is never overwritten because it may hold edits made in
+    the terminal UI.
     """
 
     source = sourceValidate(sourcePath, {".txt"})
-    output = outputResolve(outputDirectory, source.stem, ".json")
+    listName = listNameValidate(name if name is not None else source.stem)
+    output = outputResolve(outputDirectory, listName, ".json")
     if output.exists():
         raise ValueError(
-            f"shopping list already exists: '{output}'; edit it with --ui or "
-            "move it aside before importing again"
+            f"a list called '{listName}' already exists: edit it with "
+            f"'groceries --ui {listName}', or import under another name with "
+            "--output NAME"
         )
     lines = textLinesRead(source)
     records = [

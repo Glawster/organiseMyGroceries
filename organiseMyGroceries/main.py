@@ -11,14 +11,13 @@ from organiseMyGroceries import __version__
 # Keep the log directory stable regardless of whether the CLI is launched as
 # the console script or as `python -m organiseMyGroceries`.
 APPLICATION_NAME = "organisemygroceries"
-# Imported lists live under output/, so every list command defaults there.
-DEFAULT_LIST_SOURCE = Path("output/shoppingList.json")
 
 setApplication(APPLICATION_NAME)
 logger = getLogger(includeConsole=False)
 
 # Application modules are imported only after the logging context is ready.
 from organiseMyGroceries.catalogue import catalogueImport
+from organiseMyGroceries.listLibrary import LIST_DIRECTORY, listPathResolve
 from organiseMyGroceries.shoppingList import listExport, listImport, listLoad
 from organiseMyGroceries.tesco import basketAdd
 
@@ -38,11 +37,12 @@ def cliBuildParser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--ui",
         nargs="?",
-        const=DEFAULT_LIST_SOURCE,
+        # An empty value means --ui was given without a list: show the picker.
+        const="",
         default=None,
-        type=Path,
         metavar="LIST",
-        help=f"open the terminal UI to edit a JSON list (default: {DEFAULT_LIST_SOURCE})",
+        help=f"open the terminal UI on a list name or path; without LIST, "
+        f"choose from the lists in {LIST_DIRECTORY}/",
     )
     # An object is required unless the terminal UI was requested instead.
     objects = parser.add_subparsers(dest="object")
@@ -65,6 +65,8 @@ def cliRun(arguments: Sequence[str] | None = None) -> int:
     if args.object is None:
         parser.error("a command is required unless --ui is given")
 
+    if args.object == "list" and args.action in {"send", "export"}:
+        args.source = listPathResolve(args.source)
     dryRun = not args.confirm
     logger = getLogger(includeConsole=True, dryRun=dryRun)
     logger.doing("starting")
@@ -103,7 +105,7 @@ def _commandDispatch(args: argparse.Namespace, dryRun: bool) -> None:
         listExport(args.source, Path("output"), dryRun=dryRun)
         return
     if args.action == "import":
-        listImport(args.source, Path("output"), dryRun=dryRun)
+        listImport(args.source, Path("output"), dryRun=dryRun, name=args.output)
         return
 
     items = listLoad(args.source, Path("output"), dryRun=dryRun)
@@ -115,8 +117,8 @@ def _commandDispatch(args: argparse.Namespace, dryRun: bool) -> None:
     basketAdd(items)
 
 
-def _uiRun(listPath: Path) -> int:
-    """Open the terminal UI on one JSON shopping list."""
+def _uiRun(listReference: str) -> int:
+    """Open the terminal UI on one list, or on the list picker when empty."""
 
     global logger
 
@@ -124,7 +126,8 @@ def _uiRun(listPath: Path) -> int:
     logger = getLogger(includeConsole=False)
     logger.doing("starting terminal UI")
     logger.value("version", __version__)
-    logger.value("list", listPath)
+    listPath = listPathResolve(listReference) if listReference else None
+    logger.value("list", listPath or "picker")
     try:
         # Textual is imported only when the UI is requested so ordinary
         # commands start quickly and stay scriptable.
@@ -157,7 +160,6 @@ def _optionConfirmAdd(parser: argparse.ArgumentParser, helpText: str) -> None:
 def _optionSourceAdd(
     parser: argparse.ArgumentParser,
     helpText: str,
-    default: Path | None = None,
     required: bool = False,
 ) -> None:
     """Add a --source path option."""
@@ -167,8 +169,6 @@ def _optionSourceAdd(
         "required": required,
         "help": helpText,
     }
-    if default is not None:
-        arguments["default"] = default
     parser.add_argument("-s", "--source", **arguments)
 
 
@@ -203,16 +203,22 @@ def _parserAddList(subparsers: Any) -> None:
     actions = listParser.add_subparsers(dest="action", required=True)
 
     importParser = actions.add_parser(
-        "import", help="import a text list into output/<source-name>.json"
+        "import", help="import a text list into output/<name>.json"
     )
     _optionSourceAdd(
         importParser,
         "one-item-per-line shopping-list text file",
         required=True,
     )
+    importParser.add_argument(
+        "-o",
+        "--output",
+        metavar="NAME",
+        help="name of the new list (default: the text file's name)",
+    )
     _optionConfirmAdd(
         importParser,
-        "write output/<source-name>.json (default is dry-run)",
+        "write output/<name>.json (default is dry-run)",
     )
 
     sendParser = actions.add_parser(
@@ -220,8 +226,8 @@ def _parserAddList(subparsers: Any) -> None:
     )
     _optionSourceAdd(
         sendParser,
-        f"JSON or text shopping-list path (default: {DEFAULT_LIST_SOURCE})",
-        default=DEFAULT_LIST_SOURCE,
+        "list name (output/NAME.json), or a JSON or text list path",
+        required=True,
     )
     _optionConfirmAdd(
         sendParser,
@@ -231,8 +237,8 @@ def _parserAddList(subparsers: Any) -> None:
     exportParser = actions.add_parser("export", help="export active JSON items as text")
     _optionSourceAdd(
         exportParser,
-        f"JSON shopping-list path (default: {DEFAULT_LIST_SOURCE})",
-        default=DEFAULT_LIST_SOURCE,
+        "list name (output/NAME.json) or JSON list path",
+        required=True,
     )
     _optionConfirmAdd(
         exportParser,
