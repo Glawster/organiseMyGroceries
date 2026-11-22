@@ -13,6 +13,14 @@
 - Treat `list send` as store-neutral; Tesco is the current store adapter.
 - Treat authentication as a manual user step; never persist Tesco credentials.
 
+## Release model
+
+- Follow `documentation/howToRelease.md`: feature branches merge into the
+  current release branch (`release/0.2`), not directly into `main`.
+- Each feature branch takes its own alpha version in
+  `organiseMyGroceries/version.py`, and its merge into the release branch is
+  tagged, for example `v0.2a1`.
+
 ## Generated data
 
 - Shopping lists may contain personal purchasing information and must not be

@@ -68,6 +68,7 @@ def cliRun(arguments: Sequence[str] | None = None) -> int:
     dryRun = not args.confirm
     logger = getLogger(includeConsole=True, dryRun=dryRun)
     logger.doing("starting")
+    logger.value("version", __version__)
     logger.value("object", args.object)
     logger.value("action", args.action)
     logger.value("source", args.source)
@@ -122,6 +123,7 @@ def _uiRun(listPath: Path) -> int:
     # The UI owns the terminal, so log to file only while it runs.
     logger = getLogger(includeConsole=False)
     logger.doing("starting terminal UI")
+    logger.value("version", __version__)
     logger.value("list", listPath)
     try:
         # Textual is imported only when the UI is requested so ordinary

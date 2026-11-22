@@ -15,6 +15,21 @@ def testModuleEntryPointUsesPackageMain() -> None:
     assert moduleMain.main is main.main
 
 
+def testCliVersionReportsPackageVersion(capsys: pytest.CaptureFixture[str]) -> None:
+    """--version reports the single authoritative version."""
+
+    from importlib.metadata import version
+
+    from organiseMyGroceries.version import __version__
+
+    with pytest.raises(SystemExit) as exitInfo:
+        main.cliBuildParser().parse_args(["--version"])
+
+    assert exitInfo.value.code == 0
+    assert capsys.readouterr().out.strip() == f"groceries {__version__}"
+    assert version("groceries") == __version__
+
+
 def testCliBuildParserSupportsListSend() -> None:
     """List send exposes source and safe confirmation options."""
 
