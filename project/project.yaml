@@ -24,7 +24,7 @@ milestones:
     status: completed
     requirement: 002
   - name: User shopping lists
-    status: todo
+    status: inProgress
     requirement: 003
   - name: Grocery web application
     status: todo

@@ -34,7 +34,6 @@ The initial domain objects are:
 - `list`
 - `user`
 - `store`
-- `basket`
 - `server`
 - `system`
 
@@ -68,10 +67,16 @@ groceries list remove --user <user-id> <item-id>
 groceries list update --user <user-id> <item-id>
 groceries list clear --user <user-id>
 groceries list export --user <user-id>
+groceries list send --user <user-id> --store <store-id>
+groceries list import --source <list>.txt
 ```
 
+The shopping-list terminal UI is opened with the top-level option
+`groceries --ui [<list>.json]` rather than an object/action pair, because it is
+an interactive front end over the `list` actions rather than another action.
+
 `list add` means adding a catalogue item to a shopping list. It must not mean
-sending the list to Tesco or another external store.
+sending the list to Tesco or another external store; that is `list send`.
 
 ### User
 
@@ -106,18 +111,19 @@ Tesco is the first store integration but must not define the application domain.
 The store boundary should permit additional adapters such as Sainsbury's, Asda,
 or Ocado later without changing catalogue or shopping-list semantics.
 
-### Basket
+### Sending a list to a store
 
-Moving a user's shopping list towards an external store basket is a separate
-workflow:
+Sending a user's shopping list to an external store basket is the `list send`
+action:
 
 ```text
-groceries basket preview --user <user-id> --store <store-id>
-groceries basket add --user <user-id> --store <store-id>
+groceries list send --user <user-id> --store <store-id>
+groceries list send --user <user-id> --store <store-id> --confirm
 ```
 
-`basket preview` is the safe-by-default view of the intended external actions.
-`basket add` performs the confirmed external-store action where supported.
+Without `--confirm`, `list send` is the safe-by-default preview of the intended
+external actions. With `--confirm` it performs the external-store action where
+supported. No other `list` action may interact with an external store.
 Authentication, payment, and checkout remain outside the application unless a
 future ADR explicitly changes that boundary.
 
@@ -155,8 +161,8 @@ state without absorbing domain-specific maintenance actions.
 3. Use `show` for one identified record and `list` for collections.
 4. Prefer reversible lifecycle actions such as `deactivate` and `disable` over
    destructive deletion when stable references may exist.
-5. External-store actions belong under `basket` or `store`, not under `list` or
-   `catalogue`.
+5. Sending a list to an external store is `list send`; store configuration
+   belongs under `store`. No other action may interact with an external store.
 6. All mutating CLI commands remain subject to OMP safe-by-default behaviour and
    explicit confirmation where required.
 
@@ -169,7 +175,7 @@ state without absorbing domain-specific maintenance actions.
   domain.
 - The CLI and future web application can share the same domain services.
 - New stores can be introduced without redefining shopping-list commands.
-- Safe preview of external basket changes has a clear home.
+- Safe preview of external basket changes has a clear home in `list send`.
 - Later agents have a stable vocabulary instead of inventing command structures
   increment by increment.
 
@@ -195,22 +201,36 @@ catalogue item. This ADR does not introduce the `product` object yet.
 
 ## Alternatives considered
 
-### Keep Tesco actions under `list`
+### Use `list add` to send a list to a store
 
 Rejected because Requirement 003 makes `list` a first-class user-owned shopping
-list. Sending a list to a store is a different concern and would make `list add`
-ambiguous.
+list, and `list add` naturally means adding a catalogue item to it. Using the
+same verb for sending to a store would be ambiguous; `list send` is used instead.
+
+### Separate `basket` object
+
+Originally accepted (`basket preview` and `basket add`), then replaced by
+`list send` on 2026-11-22. Sending acts on a user's list, so a separate object
+added a concept to learn without adding behaviour, and preview is already the
+default of every mutating command.
 
 ### Make Tesco a top-level object
 
 Rejected because Tesco is one store implementation, not a stable application
-domain concept. Use `store` and `basket` instead.
+domain concept. Use `store` and `list send` instead.
 
 ### Use implementation-oriented objects
 
 Commands based on `json`, `playwright`, `fastapi`, or storage modules were
 rejected because implementation choices may change while the domain concepts
 remain stable.
+
+## Amendments
+
+- 2026-11-22: replaced `basket preview` and `basket add` with `list send`
+  (preview by default, `--confirm` to send).
+- 2026-11-22: added `list import` and the top-level `--ui` option that opens
+  the shopping-list terminal UI (Requirement 003).
 
 ## Related requirements and decisions
 

@@ -6,7 +6,6 @@ Next available number: 008
 
 | Req ID | Requirement | Description | Agent Prompt | Architecture Decisions |
 | --- | --- | --- | --- | --- |
-| 003 | [User Shopping Lists](features/003-userShoppingLists.md) | Maintain independent per-user lists over the shared catalogue. | [Prompt](prompt/003-userShoppingLists.md) | [ADR-001](../adr/001-webApplicationArchitecture.md) |
 | 004 | [Grocery Web Application](features/004-groceryWebApplication.md) | Provide the browser application for remote users. | [Prompt](prompt/004-groceryWebApplication.md) | [ADR-001](../adr/001-webApplicationArchitecture.md) |
 | 005 | [Tesco Integration](features/005-tescoIntegration.md) | Keep Tesco search/click-through behind a controlled external boundary. | [Prompt](prompt/005-tescoIntegration.md) | [ADR-001](../adr/001-webApplicationArchitecture.md) |
 | 006 | [Authentication and User Isolation](features/006-authentication.md) | Protect Internet-accessible profiles and user data. | [Prompt](prompt/006-authentication.md) | [ADR-001](../adr/001-webApplicationArchitecture.md) |
@@ -14,7 +13,9 @@ Next available number: 008
 
 ## In Progress
 
-None.
+| Req ID | Requirement | Description | Agent Prompt | Architecture Decisions |
+| --- | --- | --- | --- | --- |
+| 003 | [User Shopping Lists](features/003-userShoppingLists.md) | Import text lists to JSON and edit them in a terminal UI. | [Prompt](prompt/003-userShoppingLists.md) | [ADR-001](../adr/001-webApplicationArchitecture.md), [ADR-003](../adr/003-commandLineObjectModel.md) |
 
 ## Completed
 

@@ -1,34 +1,17 @@
-"""Read, convert, validate, and export shopping lists."""
+"""Import, read, validate, and export shopping lists."""
 
 import json
 from pathlib import Path
-from typing import Any
 
 from organiseMyProjects.logUtils import getLogger
 
 from organiseMyGroceries.files import outputResolve, sourceValidate, textLinesRead
+from organiseMyGroceries.listDocument import listDocumentSave, recordBuild
 
 logger = getLogger()
 
 
 ## public workflow
-
-
-def listConvert(sourcePath: Path, outputDirectory: Path, dryRun: bool = False) -> Path:
-    """Convert a plain-text shopping list to the standard JSON schema."""
-
-    source = sourceValidate(sourcePath, {".txt"})
-    output = outputResolve(outputDirectory, source.stem, ".json")
-    lines = textLinesRead(source)
-    records = [_recordBuild(index, line) for index, line in enumerate(lines, start=1)]
-
-    logger.action("writing converted shopping list")
-    logger.value("output", output)
-    if not dryRun:
-        output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_text(json.dumps(records, indent=2) + "\n")
-        logger.done("writing converted shopping list")
-    return output
 
 
 def listExport(sourcePath: Path, outputDirectory: Path, dryRun: bool = False) -> Path:
@@ -47,6 +30,32 @@ def listExport(sourcePath: Path, outputDirectory: Path, dryRun: bool = False) ->
     return output
 
 
+def listImport(sourcePath: Path, outputDirectory: Path, dryRun: bool = False) -> Path:
+    """Import a plain-text shopping list into a new JSON list under output/.
+
+    An existing JSON list is never overwritten because it may hold edits made
+    in the terminal UI; the user must move it aside to import again.
+    """
+
+    source = sourceValidate(sourcePath, {".txt"})
+    output = outputResolve(outputDirectory, source.stem, ".json")
+    if output.exists():
+        raise ValueError(
+            f"shopping list already exists: '{output}'; edit it with --ui or "
+            "move it aside before importing again"
+        )
+    lines = textLinesRead(source)
+    records = [
+        recordBuild(f"item-{index}", line) for index, line in enumerate(lines, start=1)
+    ]
+
+    logger.value("items imported", len(records))
+    if not dryRun:
+        output.parent.mkdir(parents=True, exist_ok=True)
+    # Saving validates every record and writes atomically (dry-run aware).
+    return listDocumentSave(output, records, dryRun=dryRun)
+
+
 def listLoad(
     sourcePath: Path, outputDirectory: Path, dryRun: bool = False
 ) -> list[str]:
@@ -54,10 +63,12 @@ def listLoad(
 
     source = sourceValidate(sourcePath, {".json", ".txt"})
     if source.suffix.lower() == ".txt":
-        # Conversion is a user-visible derived artifact, but loading does not
+        # Importing is a user-visible derived artifact, but loading does not
         # depend on writing it, so preview mode remains free of side effects.
-        if not dryRun:
-            listConvert(source, outputDirectory)
+        # An existing JSON list may contain UI edits, so it is left alone.
+        output = outputResolve(outputDirectory, source.stem, ".json")
+        if not dryRun and not output.exists():
+            listImport(source, outputDirectory)
         return textLinesRead(source)
     return _itemsRead(source)
 
@@ -88,19 +99,3 @@ def _itemsRead(sourcePath: Path) -> list[str]:
             raise ValueError(f"active item {index} in '{sourcePath}' needs a name")
         items.append(term.strip())
     return items
-
-
-def _recordBuild(index: int, name: str) -> dict[str, Any]:
-    """Build one standard shopping-list record."""
-
-    return {
-        "id": f"item-{index}",
-        "name": name,
-        "tescoSearch": name,
-        "preferredProduct": "",
-        "quantity": 1,
-        "unit": "",
-        "category": "",
-        "notes": "",
-        "active": True,
-    }

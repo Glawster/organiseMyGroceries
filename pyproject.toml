@@ -11,6 +11,7 @@ requires-python = ">=3.10"
 dependencies = [
     "organiseMyProjects",
     "playwright>=1.54,<2",
+    "textual>=8.2,<9",
 ]
 
 [project.scripts]
@@ -25,7 +26,10 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["organiseMyGroceries"]
+include = ["organiseMyGroceries*"]
+
+[tool.setuptools.package-data]
+"organiseMyGroceries.ui" = ["*.tcss"]
 
 [tool.black]
 target-version = ["py310"]

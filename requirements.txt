@@ -1,5 +1,6 @@
 -e ../organiseMyProjects
 playwright>=1.54,<2
+textual>=8.2,<9
 
 # OMP-MANAGED-BEGIN
 # Production dependencies belong to the project. OMP does not add any.

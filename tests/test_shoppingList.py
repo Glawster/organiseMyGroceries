@@ -16,20 +16,64 @@ def _sampleItems() -> list[dict[str, object]]:
     ]
 
 
-def testListConvertCreatesExpectedSchema(tmp_path: Path, monkeypatch) -> None:
-    """A real text source is converted to the documented JSON schema."""
+def testListImportCreatesExpectedSchema(tmp_path: Path, monkeypatch) -> None:
+    """A real text source is imported into the documented JSON schema."""
 
     monkeypatch.chdir(tmp_path)
     source = tmp_path / "shopping.txt"
     source.write_text("Soda farl\n\nMilk\n")
 
-    output = shoppingList.listConvert(source, Path("output"))
+    output = shoppingList.listImport(source, Path("output"))
 
     data = json.loads(output.read_text())
     assert output == tmp_path / "output" / "shopping.json"
     assert [record["name"] for record in data] == ["Soda farl", "Milk"]
     assert data[0]["id"] == "item-1"
     assert data[0]["active"] is True
+    assert data[0]["quantity"] == 1
+
+
+def testListImportNeverOverwritesExistingList(tmp_path: Path, monkeypatch) -> None:
+    """A second import fails rather than discarding edits to the JSON list."""
+
+    monkeypatch.chdir(tmp_path)
+    source = tmp_path / "shopping.txt"
+    source.write_text("Milk\n")
+    output = shoppingList.listImport(source, Path("output"))
+    output.write_text('[{"id": "item-1", "name": "Edited"}]')
+
+    with pytest.raises(ValueError, match="already exists"):
+        shoppingList.listImport(source, Path("output"))
+
+    assert "Edited" in output.read_text()
+
+
+def testListImportHonoursDryRun(tmp_path: Path, monkeypatch) -> None:
+    """Preview import creates neither the output directory nor the list."""
+
+    monkeypatch.chdir(tmp_path)
+    source = tmp_path / "shopping.txt"
+    source.write_text("Milk\n")
+
+    shoppingList.listImport(source, Path("output"), dryRun=True)
+
+    assert not (tmp_path / "output").exists()
+
+
+def testListLoadTextKeepsExistingImportedList(tmp_path: Path, monkeypatch) -> None:
+    """Sending a text list never replaces an existing, possibly edited, JSON list."""
+
+    monkeypatch.chdir(tmp_path)
+    source = tmp_path / "shopping.txt"
+    source.write_text("Apples\n")
+    existing = tmp_path / "output" / "shopping.json"
+    existing.parent.mkdir()
+    existing.write_text('[{"id": "item-1", "name": "Edited"}]')
+
+    items = shoppingList.listLoad(source, Path("output"), dryRun=False)
+
+    assert items == ["Apples"]
+    assert "Edited" in existing.read_text()
 
 
 def testListExportHonoursDryRun(tmp_path: Path, monkeypatch) -> None:

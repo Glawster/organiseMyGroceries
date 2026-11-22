@@ -10,29 +10,36 @@ Commands follow `application object action`:
 
 ```text
 organiseMyGroceries catalogue import
-organiseMyGroceries list add
+organiseMyGroceries list import
+organiseMyGroceries list send
 organiseMyGroceries list export
+organiseMyGroceries --ui
 ```
 
-`list add` is store-neutral. Tesco is the current store adapter.
+`list send` is store-neutral. Tesco is the current store adapter.
 
 ```text
 CLI input
   -> main.py orchestration
   -> catalogue.py shared catalogue import, identity, and validation
-  -> shoppingList.py user-list validation and transformation
-  -> tesco.py store adapter (confirmed list add only)
+  -> shoppingList.py list import, send terms, and text export
+  -> listDocument.py JSON list model: load, validate, edit, atomic save
+  -> ui/ Textual terminal UI over listDocument.py (--ui only)
+  -> tesco.py store adapter (confirmed list send only)
   -> grocery store website
 ```
 
 `catalogue.py` and `shoppingList.py` have no Playwright or UI dependency and can
 be tested using local files. Shared path validation lives in `files.py`.
+`listDocument.py` owns every list edit rule, so the terminal UI in `ui/` only
+orchestrates it. The UI loads the shared OMP theme `myStyles.css` for colour and
+`ui/listApp.tcss` for layout, and imports Textual only when `--ui` is used.
 `tesco.py` is the external-system adapter and is the only module that knows
 browser selectors or manual login flow.
 
-The grocery catalogue is shared product data. User shopping lists will reference
-stable catalogue identifiers rather than storing a second copy of product
-definitions. See [Grocery catalogue](groceryCatalogue/groceryCatalogueIndex.md) for the JSON
+The grocery catalogue is shared product data. Shopping lists are currently
+independent JSON documents; linking list entries to catalogue identifiers is
+deferred (see requirement 003). See [Grocery catalogue](groceryCatalogue/groceryCatalogueIndex.md) for the JSON
 document, identity, and import rules.
 
 ## Data boundaries
