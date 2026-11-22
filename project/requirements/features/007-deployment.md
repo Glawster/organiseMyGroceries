@@ -1,6 +1,8 @@
-# 007 — Production Deployment
+# 007: Production Deployment
 
-**Status:** ToDo
+## Status
+
+ToDo
 
 ## Objective
 
@@ -159,3 +161,7 @@ Capture sufficient command/output or other evidence to show that the real produc
 * Requirement 006 — Authentication and User Isolation
 * ADR-001 — Web Application Architecture
 * ADR-003 — Command Line Object Model
+
+## Change history
+
+* 2026-11-22: name corrected to follow documentation/requirementsManagement.md.

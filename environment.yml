@@ -2,8 +2,11 @@ name: organiseMyGroceries
 channels:
   - conda-forge
 dependencies:
-  - python=3.13
   - pip
   - pip:
       - -e ../organiseMyProjects
       - -e .[dev]
+
+  # OMP-MANAGED-BEGIN
+  - python>=3.10
+  # OMP-MANAGED-END

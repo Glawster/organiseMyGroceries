@@ -26,3 +26,15 @@ None.
 ## Sequencing
 
 The expected dependency order is 002 → 003 → 004 → 005/006 → 007. Requirements 005 and 006 may be developed independently once the web application boundaries from 004 are stable, but production deployment in 007 depends on authentication/user isolation being complete.
+
+## Prompt index
+
+<!-- OMP-PROMPT-INDEX-BEGIN -->
+- [001-alignAgentInstructions](prompt/001-alignAgentInstructions.md)
+- [002-groceryCatalogue](prompt/002-groceryCatalogue.md)
+- [003-userShoppingLists](prompt/003-userShoppingLists.md)
+- [004-groceryWebApplication](prompt/004-groceryWebApplication.md)
+- [005-tescoIntegration](prompt/005-tescoIntegration.md)
+- [006-authentication](prompt/006-authentication.md)
+- [007-deployment](prompt/007-deployment.md)
+<!-- OMP-PROMPT-INDEX-END -->

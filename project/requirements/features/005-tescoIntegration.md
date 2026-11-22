@@ -1,6 +1,8 @@
-# 005 — Store Integration
+# 005: Store Integration
 
-**Status:** ToDo
+## Status
+
+ToDo
 
 ## Objective
 
@@ -110,3 +112,7 @@ groceries basket add --user <user> --store <store>
 * Requirement 003 — User Shopping Lists
 * Requirement 004 — Grocery Web Application
 * ADR-003 — Command Line Object Model
+
+## Change history
+
+* 2026-11-22: name corrected to follow documentation/requirementsManagement.md.

@@ -1,6 +1,8 @@
-# 004 — Grocery Web Application
+# 004: Grocery Web Application
 
-**Status:** ToDo
+## Status
+
+ToDo
 
 ## Objective
 
@@ -39,3 +41,7 @@ Production deployment must not rely on profile selection alone; authentication i
 * Reloading the page restores saved state.
 * Different profiles display their own lists.
 * Core functionality has automated tests that do not require a browser.
+
+## Change history
+
+* 2026-11-22: name corrected to follow documentation/requirementsManagement.md.
