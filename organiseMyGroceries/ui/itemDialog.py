@@ -14,7 +14,7 @@ FIELDS = (
     ("name", "Item"),
     ("quantity", "Quantity"),
     ("unit", "Unit"),
-    ("category", "Category"),
+    ("aisle", "Aisle"),
     ("tescoSearch", "Store search"),
     ("preferredProduct", "Preferred product"),
     ("notes", "Notes"),

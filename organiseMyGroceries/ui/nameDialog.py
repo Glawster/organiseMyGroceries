@@ -1,4 +1,4 @@
-"""Modal prompt for the name of a new shopping list."""
+"""Modal prompt for a shopping-list name, used to create or rename a list."""
 
 from typing import Callable
 
@@ -14,11 +14,19 @@ class NameDialog(ModalScreen[str | None]):
 
     BINDINGS = [Binding("escape", "cancel", "Cancel")]
 
-    def __init__(self, title: str, check: Callable[[str], object]) -> None:
+    def __init__(
+        self,
+        title: str,
+        check: Callable[[str], object],
+        value: str = "",
+        acceptLabel: str = "Create",
+    ) -> None:
         super().__init__()
         self.formTitle = title
         # ``check`` raises ValueError with a message for an unusable name.
         self.check = check
+        self.value = value
+        self.acceptLabel = acceptLabel
 
     ## layout
 
@@ -27,10 +35,10 @@ class NameDialog(ModalScreen[str | None]):
 
         with Vertical(id="name-box", classes="surface"):
             yield Label(self.formTitle, classes="heading")
-            yield Input(placeholder="for example weekly", id="list-name")
+            yield Input(self.value, placeholder="for example weekly", id="list-name")
             yield Static(id="name-error", classes="error")
             with Horizontal(classes="button-group"):
-                yield Button("Create", id="create", variant="primary")
+                yield Button(self.acceptLabel, id="accept", variant="primary")
                 yield Button("Cancel", id="cancel")
 
     def on_mount(self) -> None:
@@ -48,9 +56,9 @@ class NameDialog(ModalScreen[str | None]):
     ## events
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        """Create or cancel from the buttons."""
+        """Accept or cancel from the buttons."""
 
-        if event.button.id == "create":
+        if event.button.id == "accept":
             self._nameSubmit()
         else:
             self.dismiss(None)

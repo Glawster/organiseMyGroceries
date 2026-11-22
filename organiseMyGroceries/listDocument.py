@@ -23,9 +23,11 @@ TEXT_FIELDS = (
     "tescoSearch",
     "preferredProduct",
     "unit",
-    "category",
+    "aisle",
     "notes",
 )
+# Lists written before aisles existed used "category"; it is read as the aisle.
+LEGACY_AISLE_FIELD = "category"
 EDITABLE_FIELDS = TEXT_FIELDS + ("quantity",)
 
 ## public workflow
@@ -144,7 +146,7 @@ def recordBuild(itemId: str, name: str) -> dict[str, Any]:
         "preferredProduct": "",
         "quantity": 1,
         "unit": "",
-        "category": "",
+        "aisle": "",
         "notes": "",
         "active": True,
     }
@@ -189,6 +191,24 @@ def recordUpdate(
     return record
 
 
+## sorting
+
+
+def recordAisleKey(record: Mapping[str, Any]) -> tuple[Any, ...]:
+    """Sort key that walks the shop: aisle order, then item name.
+
+    Aisles are compared naturally, so "2" comes before "10", and items with no
+    aisle come last.
+    """
+
+    aisle = str(record.get("aisle", "")).strip()
+    parts = re.split(r"(\d+)", aisle.lower())
+    natural = tuple(
+        (0, int(part), "") if part.isdigit() else (1, 0, part) for part in parts if part
+    )
+    return (not aisle, natural, str(record.get("name", "")).lower())
+
+
 ## utilities
 
 
@@ -225,6 +245,14 @@ def _recordNormalise(record: Any, index: int, sourceLabel: str) -> dict[str, Any
         raise ValueError(f"item {index} in '{sourceLabel}' must be an object")
     defaults = recordBuild(str(record.get("id", "")), str(record.get("name", "")))
     normalised = {**defaults, **record}
+    if LEGACY_AISLE_FIELD in normalised:
+        legacy = normalised.pop(LEGACY_AISLE_FIELD)
+        if not normalised["aisle"] and isinstance(legacy, str):
+            normalised["aisle"] = legacy
+    # Hand-written lists may number aisles; the editor treats them as text.
+    aisle = normalised["aisle"]
+    if isinstance(aisle, int) and not isinstance(aisle, bool):
+        normalised["aisle"] = str(aisle)
     if not normalised.get("tescoSearch"):
         normalised["tescoSearch"] = normalised["name"]
     _recordValidate(normalised, index, sourceLabel, requireId=False)

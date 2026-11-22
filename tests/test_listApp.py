@@ -220,7 +220,10 @@ def testPickerShowsListsAndOpensOne(tmp_path: Path) -> None:
 
     async def scenario(app: ListApp, pilot: Pilot) -> None:
         assert isinstance(app.screen, PickerScreen)
-        assert _pickerRows(app) == [["party", "1", "1"], ["weekly", "2", "2"]]
+        assert [row[:3] for row in _pickerRows(app)] == [
+            ["party", "1", "1"],
+            ["weekly", "2", "2"],
+        ]
         await pilot.press("down", "enter")
         await pilot.pause()
         assert isinstance(app.screen, ListScreen)
@@ -248,7 +251,7 @@ def testPickerCountsFollowSavedEdits(tmp_path: Path) -> None:
         await pilot.pause()
         return _pickerRows(app)
 
-    assert _appRun(None, scenario, directory)[1] == ["weekly", "2", "1"]
+    assert _appRun(None, scenario, directory)[1][:3] == ["weekly", "2", "1"]
 
 
 def testPickerCloseWithUnsavedChangesAsksFirst(tmp_path: Path) -> None:
@@ -312,3 +315,93 @@ def testPickerExplainsWhenThereAreNoLists(tmp_path: Path) -> None:
         return str(app.screen.query_one("#status", Static).render())
 
     assert "press n to create one" in _appRun(None, scenario, tmp_path / "lists")
+
+
+def testPickerRenamesList(tmp_path: Path) -> None:
+    """r renames the highlighted list."""
+
+    directory = _listsWrite(tmp_path)
+
+    async def scenario(app: ListApp, pilot: Pilot) -> list[str]:
+        await pilot.press("r")
+        await pilot.pause()
+        assert isinstance(app.screen, NameDialog)
+        app.screen.query_one("#list-name", Input).value = "birthday"
+        await pilot.press("enter")
+        await pilot.pause()
+        return [row[0] for row in _pickerRows(app)]
+
+    assert _appRun(None, scenario, directory) == ["birthday", "weekly"]
+    assert (directory / "birthday.json").is_file()
+    assert not (directory / "party.json").exists()
+
+
+def testPickerRemoveQuarantinesAfterConfirmation(tmp_path: Path) -> None:
+    """d asks, then moves the list to quarantine/ rather than deleting it."""
+
+    directory = _listsWrite(tmp_path)
+
+    async def scenario(app: ListApp, pilot: Pilot) -> list[str]:
+        await pilot.press("d")
+        await pilot.pause()
+        assert isinstance(app.screen, ConfirmDialog)
+        await pilot.press("n")
+        await pilot.pause()
+        await pilot.press("d")
+        await pilot.pause()
+        await pilot.press("y")
+        await pilot.pause()
+        return [row[0] for row in _pickerRows(app)]
+
+    assert _appRun(None, scenario, directory) == ["weekly"]
+    quarantined = list((directory / "quarantine").glob("party-*.json"))
+    assert len(quarantined) == 1
+    assert "Crisps" in quarantined[0].read_text()
+
+
+def testListAppSortsByAisleWithoutChangingSavedOrder(tmp_path: Path) -> None:
+    """s shows the list in aisle order; saving keeps the original order."""
+
+    listPath = tmp_path / "shoppingList.json"
+    listPath.write_text(
+        json.dumps(
+            [
+                {"id": "item-1", "name": "Tea", "aisle": "9"},
+                {"id": "item-2", "name": "Milk", "aisle": "2"},
+            ]
+        )
+    )
+
+    async def scenario(app: ListApp, pilot: Pilot) -> list[str]:
+        await pilot.press("s")
+        await pilot.pause()
+        table = app.screen.query_one("#items", DataTable)
+        shown = [str(table.get_row_at(row)[0]) for row in range(table.row_count)]
+        await pilot.press("space", "ctrl+s")
+        await pilot.pause()
+        return shown
+
+    assert _appRun(listPath, scenario) == ["Milk", "Tea"]
+    assert [record["name"] for record in _saved(listPath)] == ["Tea", "Milk"]
+
+
+def testPickerShowsWhenAListWasLastUsed(tmp_path: Path) -> None:
+    """Opening a list updates its last-used date in the picker."""
+
+    import os
+
+    directory = _listsWrite(tmp_path)
+    os.utime(directory / "party.json", (0, 0))
+
+    async def scenario(app: ListApp, pilot: Pilot) -> tuple[str, str]:
+        before = _pickerRows(app)[0][3]
+        await pilot.press("enter")
+        await pilot.pause()
+        await pilot.press("q")
+        await pilot.pause()
+        return before, _pickerRows(app)[0][3]
+
+    before, after = _appRun(None, scenario, directory)
+
+    assert "1970" in before
+    assert before != after

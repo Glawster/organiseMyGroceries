@@ -18,7 +18,7 @@ logger = getLogger(includeConsole=False)
 # Application modules are imported only after the logging context is ready.
 from organiseMyGroceries.catalogue import catalogueImport
 from organiseMyGroceries.files import LIST_DIRECTORY, OUTPUT_DIRECTORY
-from organiseMyGroceries.listLibrary import listPathResolve
+from organiseMyGroceries.listLibrary import listPathResolve, listTouch
 from organiseMyGroceries.shoppingList import listExport, listImport, listLoad
 from organiseMyGroceries.tesco import basketAdd
 
@@ -116,6 +116,8 @@ def _commandDispatch(args: argparse.Namespace, dryRun: bool) -> None:
         return
     # Tesco is the current store adapter; list send stays store-neutral.
     basketAdd(items)
+    if args.source.suffix.lower() == ".json":
+        listTouch(args.source)
 
 
 def _uiRun(listReference: str) -> int:

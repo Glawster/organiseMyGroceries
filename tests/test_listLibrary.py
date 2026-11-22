@@ -1,6 +1,8 @@
 """Tests for named shopping lists under lists/."""
 
 import json
+import os
+from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -9,7 +11,10 @@ from organiseMyGroceries.listLibrary import (
     listCreate,
     listNameValidate,
     listPathResolve,
+    listQuarantine,
+    listRename,
     listSummarise,
+    listTouch,
 )
 
 
@@ -71,3 +76,52 @@ def testListNameValidateRejectsUnusableNames(name: str) -> None:
 
     with pytest.raises(ValueError, match="list name"):
         listNameValidate(name)
+
+
+def testListRenameMovesTheFile(tmp_path: Path) -> None:
+    """Renaming keeps the contents under the new name."""
+
+    (tmp_path / "weekly.json").write_text('[{"name": "Milk"}]')
+    (tmp_path / "party.json").write_text("[]")
+
+    target = listRename("weekly", "monday", tmp_path)
+
+    assert target == tmp_path / "monday.json"
+    assert "Milk" in target.read_text()
+    assert not (tmp_path / "weekly.json").exists()
+    with pytest.raises(ValueError, match="already exists"):
+        listRename("monday", "party", tmp_path)
+    with pytest.raises(ValueError, match="no list called"):
+        listRename("missing", "other", tmp_path)
+    with pytest.raises(ValueError, match="list name"):
+        listRename("monday", "../up", tmp_path)
+
+
+def testListQuarantineHidesButKeepsTheList(tmp_path: Path) -> None:
+    """A removed list leaves the picker but is kept in quarantine/."""
+
+    (tmp_path / "weekly.json").write_text('[{"name": "Milk"}]')
+    first = listQuarantine("weekly", tmp_path)
+    (tmp_path / "weekly.json").write_text('[{"name": "Tea"}]')
+    second = listQuarantine("weekly", tmp_path)
+
+    assert first.parent == second.parent == tmp_path / "quarantine"
+    assert first != second
+    assert "Milk" in first.read_text() and "Tea" in second.read_text()
+    assert listSummarise(tmp_path) == []
+    with pytest.raises(ValueError, match="no list called"):
+        listQuarantine("weekly", tmp_path)
+
+
+def testListTouchSetsLastUsed(tmp_path: Path) -> None:
+    """The picker's last-used time follows the list being used."""
+
+    path = tmp_path / "weekly.json"
+    path.write_text("[]")
+    os.utime(path, (0, 0))
+    assert listSummarise(tmp_path)[0].lastUsed == datetime.fromtimestamp(0)
+
+    listTouch(path)
+
+    lastUsed = listSummarise(tmp_path)[0].lastUsed
+    assert (datetime.now() - lastUsed).total_seconds() < 60

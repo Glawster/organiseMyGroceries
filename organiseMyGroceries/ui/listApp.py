@@ -6,7 +6,7 @@ from organiseMyProjects.logUtils import getLogger
 from textual.app import App
 
 from organiseMyGroceries.listDocument import listDocumentLoad
-from organiseMyGroceries.listLibrary import LIST_DIRECTORY
+from organiseMyGroceries.listLibrary import LIST_DIRECTORY, listTouch
 from organiseMyGroceries.ui.listScreen import ListScreen
 from organiseMyGroceries.ui.pickerScreen import PickerScreen
 
@@ -44,6 +44,7 @@ class ListApp(App[None]):
             self.push_screen(PickerScreen(self.directory))
             return
         self.sub_title = str(self.listPath)
+        listTouch(self.listPath)
         # With a single named list, closing it ends the application.
         self.push_screen(
             ListScreen(self.listPath, self.records), lambda _result: self.exit()

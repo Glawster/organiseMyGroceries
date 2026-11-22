@@ -28,4 +28,6 @@
 - Shopping lists (imported, created and exported) belong beneath the root
   `lists/` directory; other generated files, such as the catalogue, belong
   beneath the root `output/` directory. Both are git-ignored.
+- The application never deletes a shopping list: removing one moves it to
+  `lists/quarantine/`.
 - Tests must use fictional shopping-list data and `tmp_path`.

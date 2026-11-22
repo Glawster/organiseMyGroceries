@@ -74,14 +74,22 @@ organiseMyGroceries --ui weekly    # open lists/weekly.json
 
 ### Choose a list
 
-The list picker shows each list in `lists/` with its item and active counts.
-Other JSON files there, such as the catalogue, are not shown.
+The list picker shows each list in `lists/` with its item and active counts and
+when it was last used (opened, saved or sent). Other JSON files there are not
+shown.
 
 | Key | Action |
 | --- | --- |
 | `Enter` or `o` | Open the highlighted list |
 | `n` | Create a new empty list and open it |
+| `r` | Rename the highlighted list |
+| `d` or `Delete` | Remove the highlighted list (asks first) |
 | `q` | Quit |
+
+Removing a list never deletes it. It is moved to `lists/quarantine/` with the
+date and time added to its name, for example `weekly-20261122-143000.json`. To
+bring it back, move it into `lists/` and give it a `.json` name that is not
+already used.
 
 Closing a list returns to the picker. A list named on the command line closes
 straight back to the terminal.
@@ -95,13 +103,20 @@ The table shows every item. Use the keys or the buttons beneath the table:
 | `a` | Add an item |
 | `e` or `Enter` | Edit the highlighted item |
 | `space` | Switch the item between active and inactive |
+| `s` | Sort by aisle, or back to the list's own order |
 | `d` or `Delete` | Remove the item (asks first) |
 | `Ctrl+S` | Save the list |
 | `q` | Close the list (asks first if there are unsaved changes) |
 
-The item form has the item name, quantity, unit, category, store search,
+The item form has the item name, quantity, unit, aisle, store search,
 preferred product and notes. The name is required and the quantity must be a
 whole number of at least 1. An empty store search uses the item name.
+
+The aisle is free text such as `4` or `Bakery`. Sorting by aisle puts numbered
+aisles in number order (`2` before `10`), then named aisles, then items with no
+aisle, which helps you walk the shop in order. Sorting changes only the view;
+the saved list keeps its own order. Lists saved before aisles existed show
+their old category as the aisle.
 
 Changes are kept in memory until you save. Saving validates the whole list and
 replaces the file in one step. Inactive items stay on the list but are not sent

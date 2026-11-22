@@ -13,6 +13,7 @@ from textual.widgets import Button, DataTable, Footer, Header, Static
 from organiseMyGroceries.listDocument import (
     listDocumentSave,
     recordAdd,
+    recordAisleKey,
     recordFind,
     recordRemove,
     recordToggle,
@@ -27,7 +28,7 @@ COLUMNS = (
     ("name", "Item"),
     ("quantity", "Qty"),
     ("unit", "Unit"),
-    ("category", "Category"),
+    ("aisle", "Aisle"),
     ("tescoSearch", "Store search"),
     ("notes", "Notes"),
     ("active", "Active"),
@@ -44,6 +45,7 @@ class ListScreen(Screen[None]):
         Binding("e", "edit", "Edit"),
         Binding("space", "toggle", "Active"),
         Binding("d,delete", "remove", "Remove"),
+        Binding("s", "sort", "Sort"),
         Binding("ctrl+s", "save", "Save"),
         Binding("q", "close", "Close"),
     ]
@@ -53,6 +55,8 @@ class ListScreen(Screen[None]):
         self.listPath = listPath
         self.records = records
         self.unsaved = False
+        # Sorting by aisle changes only the view, never the saved order.
+        self.sortByAisle = False
 
     ## layout
 
@@ -160,6 +164,12 @@ class ListScreen(Screen[None]):
             ConfirmDialog(f"Remove '{name}' from the list?"), _removeConfirmed
         )
 
+    def action_sort(self) -> None:
+        """Switch between the list's own order and walking the aisles."""
+
+        self.sortByAisle = not self.sortByAisle
+        self._tableRefresh(self._cursorItemId(warn=False))
+
     def action_toggle(self) -> None:
         """Switch the highlighted item between active and inactive."""
 
@@ -197,12 +207,13 @@ class ListScreen(Screen[None]):
 
     ## utilities
 
-    def _cursorItemId(self) -> str | None:
+    def _cursorItemId(self, warn: bool = True) -> str | None:
         """Return the highlighted item's id, or None when the list is empty."""
 
         table = self.query_one("#items", DataTable)
         if table.row_count == 0:
-            self.notify("The list is empty", severity="warning")
+            if warn:
+                self.notify("The list is empty", severity="warning")
             return None
         rowKey, _columnKey = table.coordinate_to_cell_key(table.cursor_coordinate)
         return str(rowKey.value)
@@ -223,8 +234,9 @@ class ListScreen(Screen[None]):
 
         active = sum(1 for record in self.records if record["active"])
         state = "unsaved changes" if self.unsaved else "saved"
+        order = "by aisle" if self.sortByAisle else "list order"
         self.query_one("#status", Static).update(
-            f"{len(self.records)} items, {active} active · {state}"
+            f"{len(self.records)} items, {active} active · {order} · {state}"
         )
 
     def _tableRefresh(self, selectId: str | None = None) -> None:
@@ -233,7 +245,12 @@ class ListScreen(Screen[None]):
         table = self.query_one("#items", DataTable)
         previousRow = table.cursor_row
         table.clear()
-        for record in self.records:
+        shown = (
+            sorted(self.records, key=recordAisleKey)
+            if self.sortByAisle
+            else self.records
+        )
+        for record in shown:
             table.add_row(
                 *(_cellText(record, key) for key, _caption in COLUMNS),
                 key=record["id"],

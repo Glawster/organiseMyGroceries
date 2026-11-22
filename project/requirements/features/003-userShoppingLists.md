@@ -15,8 +15,10 @@ catalogue remains available as common product data.
 ### List documents
 
 * A shopping list is a JSON document: a list of item records with `id`,
-  `name`, `tescoSearch`, `preferredProduct`, `quantity`, `unit`, `category`,
+  `name`, `tescoSearch`, `preferredProduct`, `quantity`, `unit`, `aisle`,
   `notes` and `active`.
+* `aisle` is free text. Older lists that use `category` load with it as the
+  aisle.
 * Each user has an independent list document; editing or saving one list must
   never modify another.
 * Lists persist between sessions. JSON storage is acceptable initially, and the
@@ -50,6 +52,12 @@ catalogue remains available as common product data.
   `lists/` with its item and active counts. It opens a list, creates a new
   empty list, and returns to the picker when a list is closed. JSON files that
   are not shopping lists are not shown.
+* The picker shows when each list was last used (opened, saved or sent).
+* The picker renames lists and removes them. Removal asks for confirmation and
+  never deletes: the list moves to `lists/quarantine/` under a time-stamped
+  name, so it can be restored.
+* The list editor can show items sorted by aisle (natural order, items without
+  an aisle last) without changing the saved order.
 * The UI supports adding, editing, activating/deactivating and removing items,
   and saving the list.
 * Removing an item and quitting with unsaved changes both ask for confirmation.
@@ -91,6 +99,10 @@ web application (004):
   command line, and new empty lists can be created from the picker.
 * Items can be added, edited, deactivated, reactivated and removed in the
   terminal UI, and the changes survive save and reload.
+* Lists can be renamed, and removed lists are kept in `lists/quarantine/`
+  rather than deleted.
+* Items can be viewed in aisle order, and each list shows when it was last
+  used.
 * Removal and quitting with unsaved changes require confirmation.
 * Invalid edits are rejected without changing the list.
 * List loading, modification and saving are tested without a UI, and the UI is
@@ -111,3 +123,5 @@ web application (004):
 * 2026-11-22: multiple named lists, a list picker for `groceries --ui`, and
   `list import --name`; lists moved from `output/` to `lists/` and the
   `output/shoppingList.json` default was removed (0.2a2).
+* 2026-11-22: list rename, removal to quarantine and a last-used date in the
+  picker; item `category` replaced by `aisle` with an aisle sort (0.2a2).

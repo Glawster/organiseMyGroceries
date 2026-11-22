@@ -2,11 +2,18 @@
 
 A list can be referred to by a short name such as ``weekly``, which means
 ``lists/weekly.json``, or by an explicit path. This module resolves names,
-summarises the lists available to choose from, and creates new empty lists.
+summarises the lists available to choose from, and creates, renames and
+quarantines lists.
+
+Lists are never deleted. Removing a list moves it into ``quarantine/`` inside
+the list directory, where it is out of the way but can be restored by moving
+the file back.
 """
 
+import os
 import re
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 
 from organiseMyGroceries.files import LIST_DIRECTORY
@@ -14,6 +21,7 @@ from organiseMyGroceries.listDocument import listDocumentLoad, listDocumentSave
 
 LIST_SUFFIXES = {".json", ".txt"}
 NAME_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
+QUARANTINE_DIRECTORY_NAME = "quarantine"
 
 
 @dataclass(frozen=True)
@@ -24,6 +32,7 @@ class ListSummary:
     path: Path
     items: int
     active: int
+    lastUsed: datetime
 
 
 ## public workflow
@@ -38,6 +47,48 @@ def listCreate(name: str, directory: Path = LIST_DIRECTORY) -> Path:
         raise ValueError(f"a list called '{name}' already exists")
     directory.mkdir(parents=True, exist_ok=True)
     return listDocumentSave(target, [])
+
+
+def listQuarantine(name: str, directory: Path = LIST_DIRECTORY) -> Path:
+    """Move a list out of sight into quarantine/ and return its new path.
+
+    The quarantined file is stamped with the time it was removed, so removing
+    a later list with the same name never overwrites an earlier one.
+    """
+
+    source = _listExisting(name, directory)
+    quarantine = directory / QUARANTINE_DIRECTORY_NAME
+    quarantine.mkdir(exist_ok=True)
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    target = quarantine / f"{name}-{stamp}.json"
+    counter = 1
+    while target.exists():
+        counter += 1
+        target = quarantine / f"{name}-{stamp}-{counter}.json"
+    source.rename(target)
+    return target
+
+
+def listTouch(path: Path) -> None:
+    """Record that a list was used now: opened, saved, or sent.
+
+    The file's modification time is the list's last-used time, so no extra
+    metadata needs storing beside the items.
+    """
+
+    os.utime(path)
+
+
+def listRename(name: str, newName: str, directory: Path = LIST_DIRECTORY) -> Path:
+    """Give a list a new name and return its new path."""
+
+    source = _listExisting(name, directory)
+    listNameValidate(newName)
+    target = directory / f"{newName}.json"
+    if target.exists():
+        raise ValueError(f"a list called '{newName}' already exists")
+    source.rename(target)
+    return target
 
 
 def listPathResolve(reference: Path | str, directory: Path = LIST_DIRECTORY) -> Path:
@@ -71,7 +122,8 @@ def listSummarise(directory: Path = LIST_DIRECTORY) -> list[ListSummary]:
         except (OSError, ValueError):
             continue
         active = sum(1 for record in records if record["active"])
-        summaries.append(ListSummary(path.stem, path, len(records), active))
+        lastUsed = datetime.fromtimestamp(path.stat().st_mtime)
+        summaries.append(ListSummary(path.stem, path, len(records), active, lastUsed))
     return summaries
 
 
@@ -87,3 +139,16 @@ def listNameValidate(name: str) -> str:
             "only letters, digits, '-' and '_'"
         )
     return name
+
+
+## utilities
+
+
+def _listExisting(name: str, directory: Path) -> Path:
+    """Return the path of an existing named list or fail clearly."""
+
+    listNameValidate(name)
+    path = directory / f"{name}.json"
+    if not path.is_file():
+        raise ValueError(f"there is no list called '{name}'")
+    return path

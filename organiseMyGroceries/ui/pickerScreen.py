@@ -1,4 +1,4 @@
-"""List picker: choose which shopping list to edit, or create a new one."""
+"""List picker: choose, create, rename, or remove shopping lists."""
 
 from pathlib import Path
 
@@ -11,18 +11,29 @@ from textual.widgets import Button, DataTable, Footer, Header, Static
 
 from organiseMyGroceries.listDocument import listDocumentLoad
 from organiseMyGroceries.listLibrary import (
+    QUARANTINE_DIRECTORY_NAME,
     listCreate,
     listNameValidate,
+    listQuarantine,
+    listRename,
     listSummarise,
+    listTouch,
 )
+from organiseMyGroceries.ui.confirmDialog import ConfirmDialog
 from organiseMyGroceries.ui.listScreen import ListScreen
 from organiseMyGroceries.ui.nameDialog import NameDialog
 
 logger = getLogger()
 
-COLUMNS = (("name", "List"), ("items", "Items"), ("active", "Active"))
+COLUMNS = (
+    ("name", "List"),
+    ("items", "Items"),
+    ("active", "Active"),
+    ("lastUsed", "Last used"),
+)
+LAST_USED_FORMAT = "%a %d %b %Y %H:%M"
 # Each button id is the name of the screen action it runs.
-BUTTON_ACTIONS = frozenset({"open", "create", "close"})
+BUTTON_ACTIONS = frozenset({"open", "create", "rename", "remove", "close"})
 
 
 class PickerScreen(Screen[None]):
@@ -31,6 +42,8 @@ class PickerScreen(Screen[None]):
     BINDINGS = [
         Binding("o", "open", "Open"),
         Binding("n", "create", "New list"),
+        Binding("r", "rename", "Rename"),
+        Binding("d,delete", "remove", "Remove"),
         Binding("q", "close", "Quit"),
     ]
 
@@ -49,6 +62,8 @@ class PickerScreen(Screen[None]):
             with Horizontal(classes="button-group"):
                 yield Button("Open", id="open", variant="primary")
                 yield Button("New list", id="create")
+                yield Button("Rename", id="rename")
+                yield Button("Remove", id="remove")
                 yield Button("Quit", id="close")
         yield Static(id="status")
         yield Footer()
@@ -77,11 +92,6 @@ class PickerScreen(Screen[None]):
     def action_create(self) -> None:
         """Ask for a name, create an empty list, and open it."""
 
-        def _nameCheck(name: str) -> None:
-            listNameValidate(name)
-            if (self.directory / f"{name}.json").exists():
-                raise ValueError(f"a list called '{name}' already exists")
-
         def _nameChosen(name: str | None) -> None:
             if name is None:
                 return
@@ -93,16 +103,70 @@ class PickerScreen(Screen[None]):
             logger.value("created list", path)
             self._listOpen(path)
 
-        self.app.push_screen(NameDialog("New list", _nameCheck), _nameChosen)
+        self.app.push_screen(NameDialog("New list", self._nameCheck), _nameChosen)
 
     def action_open(self) -> None:
         """Open the highlighted list."""
 
-        name = self._cursorName()
+        name = self._cursorName(warn=True)
+        if name is not None:
+            self._listOpen(self.directory / f"{name}.json")
+
+    def action_remove(self) -> None:
+        """Move the highlighted list to quarantine after confirmation."""
+
+        name = self._cursorName(warn=True)
         if name is None:
-            self.notify("There are no lists yet", severity="warning")
             return
-        self._listOpen(self.directory / f"{name}.json")
+
+        def _removeConfirmed(confirmed: bool | None) -> None:
+            if not confirmed:
+                return
+            try:
+                target = listQuarantine(name, self.directory)
+            except (OSError, ValueError) as error:
+                self.notify(str(error), title="Not removed", severity="error")
+                return
+            logger.value("quarantined list", target)
+            self.tableRefresh()
+            self.notify(
+                f"'{name}' moved to {self.directory}/{QUARANTINE_DIRECTORY_NAME}/",
+                title="Removed",
+            )
+
+        self.app.push_screen(
+            ConfirmDialog(
+                f"Remove '{name}'? It is moved to "
+                f"{self.directory}/{QUARANTINE_DIRECTORY_NAME}/, not deleted."
+            ),
+            _removeConfirmed,
+        )
+
+    def action_rename(self) -> None:
+        """Ask for a new name for the highlighted list."""
+
+        name = self._cursorName(warn=True)
+        if name is None:
+            return
+
+        def _renameCheck(newName: str) -> None:
+            if newName != name:
+                self._nameCheck(newName)
+
+        def _nameChosen(newName: str | None) -> None:
+            if newName is None or newName == name:
+                return
+            try:
+                target = listRename(name, newName, self.directory)
+            except (OSError, ValueError) as error:
+                self.notify(str(error), title="Not renamed", severity="error")
+                return
+            logger.value("renamed list", target)
+            self.tableRefresh(newName)
+
+        self.app.push_screen(
+            NameDialog("Rename list", _renameCheck, name, "Rename"), _nameChosen
+        )
 
     ## events
 
@@ -130,6 +194,7 @@ class PickerScreen(Screen[None]):
                 summary.name,
                 str(summary.items),
                 str(summary.active),
+                summary.lastUsed.strftime(LAST_USED_FORMAT),
                 key=summary.name,
             )
         if selectName is not None and selectName in table.rows:
@@ -143,11 +208,13 @@ class PickerScreen(Screen[None]):
                 "or import a text list with 'groceries list import'"
             )
 
-    def _cursorName(self) -> str | None:
+    def _cursorName(self, warn: bool = False) -> str | None:
         """Return the highlighted list's name, or None when there are none."""
 
         table = self.query_one("#lists", DataTable)
         if table.row_count == 0:
+            if warn:
+                self.notify("There are no lists yet", severity="warning")
             return None
         rowKey, _columnKey = table.coordinate_to_cell_key(table.cursor_coordinate)
         return str(rowKey.value)
@@ -160,9 +227,17 @@ class PickerScreen(Screen[None]):
         except (OSError, ValueError) as error:
             self.notify(str(error), title="Cannot open", severity="error")
             return
+        listTouch(path)
         logger.value("opened list", path)
         self.app.sub_title = str(path)
         self.app.push_screen(ListScreen(path, records), self._listClosed)
+
+    def _nameCheck(self, name: str) -> None:
+        """Reject a name that is malformed or already used by a list."""
+
+        listNameValidate(name)
+        if (self.directory / f"{name}.json").exists():
+            raise ValueError(f"a list called '{name}' already exists")
 
     def _listClosed(self, _result: None) -> None:
         """Back at the picker after a list is closed."""

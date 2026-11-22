@@ -18,7 +18,10 @@ def testListDocumentLoadFillsDefaultsAndKeepsUnknownKeys(tmp_path: Path) -> None
 
     source = _listWrite(
         tmp_path / "list.json",
-        [{"name": "Soda farl", "aisle": 4}, {"id": "item-7", "name": "Milk"}],
+        [
+            {"name": "Soda farl", "aisle": 4, "shop": "corner"},
+            {"id": "item-7", "name": "Milk"},
+        ],
     )
 
     records = listDocument.listDocumentLoad(source)
@@ -27,7 +30,8 @@ def testListDocumentLoadFillsDefaultsAndKeepsUnknownKeys(tmp_path: Path) -> None
     assert records[0]["tescoSearch"] == "Soda farl"
     assert records[0]["quantity"] == 1
     assert records[0]["active"] is True
-    assert records[0]["aisle"] == 4
+    assert records[0]["aisle"] == "4"
+    assert records[0]["shop"] == "corner"
     assert records[1]["id"] == "item-7"
 
 
@@ -154,3 +158,42 @@ def testQuantityParse(text: str, expected: int | None) -> None:
             listDocument.quantityParse(text)
     else:
         assert listDocument.quantityParse(text) == expected
+
+
+def testListDocumentLoadReadsLegacyCategoryAsAisle(tmp_path: Path) -> None:
+    """Lists saved before aisles existed keep their category as the aisle."""
+
+    source = _listWrite(
+        tmp_path / "list.json",
+        [
+            {"name": "Milk", "category": "Dairy"},
+            {"name": "Tea", "category": "Drinks", "aisle": "7"},
+        ],
+    )
+
+    records = listDocument.listDocumentLoad(source)
+
+    assert [record["aisle"] for record in records] == ["Dairy", "7"]
+    assert all("category" not in record for record in records)
+
+
+def testRecordAisleKeyWalksTheShop() -> None:
+    """Aisles sort naturally, by name within an aisle, and blanks last."""
+
+    records = [
+        {"name": "Tea", "aisle": "10"},
+        {"name": "Bread", "aisle": ""},
+        {"name": "Milk", "aisle": "2"},
+        {"name": "Butter", "aisle": "2"},
+        {"name": "Apples", "aisle": "Fruit"},
+    ]
+
+    ordered = sorted(records, key=listDocument.recordAisleKey)
+
+    assert [record["name"] for record in ordered] == [
+        "Butter",
+        "Milk",
+        "Tea",
+        "Apples",
+        "Bread",
+    ]
