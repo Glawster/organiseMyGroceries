@@ -38,3 +38,4 @@ milestones:
   - name: Production deployment
     status: todo
     requirement: 007
+localRuntime: false

@@ -1,4 +1,4 @@
-<!-- deployed from Glawster/organiseMyProjects release 0.5 -- do not edit directly -->
+<!-- deployed from Glawster/organiseMyProjects release 0.10a3 -- do not edit directly -->
 # Agent Instructions -- Master Development Guidelines (v2)
 
 ## Table of Contents
@@ -27,6 +27,7 @@ Read `documentation/requirementsManagement.md`.
 Read `documentation/repositoryLayout.md` before adding or moving repository content.
 Read `documentation/testingProcess.md` before planning or reviewing tests.
 Read `documentation/howToRelease.md` before planning or reviewing releases.
+Read `documentation/agentImplementationWorkflow.md` before implementing or modifying agent logic.
 
 Project-specific details belong in:
 
@@ -197,6 +198,13 @@ Short style fragments (<10 lines) are acceptable.
 
 Application themes belong in dedicated style resources.
 
+Textual applications must load `myStyles.css` through `App.CSS_PATH`. Keep
+Textual layout, presentation and colour rules in that stylesheet; use inline
+`App.CSS` only for a short, documented exception that cannot be shared.
+An intentional project-specific Textual theme must be stored at
+`styles/projectStyles.css` and loaded through `App.CSS_PATH`; do not place a
+project-owned override at the repository root.
+
 #### Sample Data
 
 Prototype or demonstration data must never be embedded in production views.
@@ -247,11 +255,31 @@ When adding new functionality:
 Avoid creating "God classes" that combine views, widgets, styling, sample data,
 business logic and persistence.
 
+### Naming Standard
+
+Use camelCase for every name a project defines: functions, methods, variables,
+parameters, attributes, and keys in config, state and other data files the project
+owns.
+
+The only exceptions are:
+
+- Classes use PascalCase and constants use UPPER_CASE_WITH_UNDERSCORES.
+- Public CLI flags use hyphens, such as `--dry-run`. Give any argparse option that
+  would generate a snake_case attribute an explicit camelCase `dest`.
+- A name keeps its spelling when an external package, protocol or format already
+  defines it and depends on that exact spelling, such as `__init__`, sqlite3's
+  `row_factory`, Textual's `on_click` or a provider's `api_key` field. Keep such
+  names at the boundary and use camelCase for the project's own values, for example
+  `imdbId = data.get("imdb_id")`.
+
+When renaming a persisted key, keep reading the old key as a fallback, prefer the
+camelCase key when both exist, and write only the camelCase key.
+
 ### Code Organisation & Function Naming Pattern
 
 - Group functions by domain or purpose.
 - Use `##` section headers with short lowercase names.
-- Function names should use the `domainAction` pattern.
+- Module-level function names should use the `domainAction` pattern.
   - domain first, then action. Use camelCase.
   - examples:
     - `configLoad`
@@ -260,10 +288,18 @@ business logic and persistence.
     - `messageParse`
     - `whatsappWaitForReady`
   - avoid reversing the pattern (e.g. `loadConfig`, `extractMessage`).
+- Class methods, classmethods and staticmethods may use an action-only name
+  because the enclosing class already supplies the domain. `Project.update()`
+  is valid; `projectUpdate()` remains valid too. Module-level functions still
+  require `domainAction`.
+- Nested or local helper functions may use ordinary descriptive names such as
+  `fail`, `empty` or `box`. Do not require `domainAction` for them.
 - Keep functions alphabetically ordered within each section unless readability will be reduced or precedence order is needed.
 - Keep public workflow near the top.
 - Keep low-level utilities near the bottom.
 - Private helpers must start with `_`.
+- Private constants may use a leading underscore on UPPER_CASE names, for
+  example `_MAX_RETRIES`.
 
 #### Example
 
@@ -306,35 +342,26 @@ Choose the entry-point pattern according to what is being built:
   entry point;
 - a packaged CLI uses a declared console-script entry point, normally targeting
   a `main()` function inside the package;
-- a standalone application uses `main.py` at its project root.
+- a GUI or standalone application exposes its entry point from the project
+  package, for example `python -m projectName` via `package/__main__.py`.
 
-A standalone application therefore uses this baseline:
+New OMP Python projects use a root-level package named after the project:
 
     projectName/
-    ├── main.py
+    ├── projectName/
+    │   └── __init__.py
+    ├── documentation/
+    ├── project/
     ├── tests/
-    ├── requirements.txt
+    ├── pyproject.toml
+    ├── projectNameEnvironment.yml
     ├── README.md
     └── .github/
         └── additional-instructions.md
 
-Larger applications may also use `src/`, `ui/`, and `qt/` folders:
-
-    projectName/
-    ├── main.py
-    ├── src/
-    │   └── projectName/
-    │       ├── __init__.py
-    │       ├── core/
-    │       ├── utils/
-    │       └── patterns/
-    ├── ui/
-    ├── qt/
-    ├── tests/
-    ├── requirements.txt
-    ├── README.md
-    └── .github/
-        └── additional-instructions.md
+Do not introduce a generic `src/` directory or a root `main.py` in a newly
+scaffolded OMP project. Existing projects that already use those layouts are
+not automatically reorganised.
 
 Rules:
 
@@ -342,10 +369,10 @@ Rules:
 - Reserve repository-level folders for shared concerns, repository tooling and cross-project integration; project-specific tests belong in that project's `tests/` folder\
 - Reusable library modules and packages do not require `main.py` or an executable entry point\
 - Packaged CLIs use declared console-script entry points, normally targeting a package-level `main()` function\
-- Standalone applications keep `main.py` at their project root\
+- GUI and standalone applications expose an entry point from the project package\
 - The application entry point sets the application logging context with `setApplication()`\
-- `src/` is optional and should be used for larger apps, reusable core logic, or UI-based apps\
-- `ui/` is optional and should contain UI orchestration/assets where useful\
+- Application and domain Python modules belong inside the project package\
+- Optional UI or Qt scaffolds belong inside the project package\
 - Documentation rule: only `README.md` may be at the project root; all other documentation must live under `documentation/`, and documentation file names should use camelCase except for `README.md`\
 - The README must include a near-top Documentation section that links to every living guide in the repo so it remains the canonical entry point for all docs\
 - Any routine that produces output files must place them in an `output/` folder directly under the project root\
@@ -353,20 +380,20 @@ Rules:
 
 ### Shared Runtime Modules
 
-Projects may contain an `omp` package.
+OMPR means organiseMyProjects; OMP means organiseMyPhotos. Canonical runtime
+sources stay in `organiseMyProjects/`; do not create a sibling runtime package
+in that repository. OMPR tooling imports `organiseMyProjects.logUtils`.
 
-`omp` stands for **organiseMyProjects**.
+Consumer applications use the managed `ompr/` package deployed by create/update
+or explicitly selected runtime sync:
 
-The package contains synchronised runtime infrastructure copied from the
-canonical `organiseMyProjects` repository.
+    from ompr.logUtils import getLogger, setApplication
 
-Agents should:
-
-- import runtime utilities from `omp`
-- never introduce a runtime dependency on `organiseMyProjects`
-- treat `omp` files as synchronised assets
-- propose changes in `organiseMyProjects` before propagating them to
-  consuming repositories
+Reserve consumer `ompr/` for OMPR runtime helpers. Keep business logic and UI in
+the application package. Include the runtime package and shell resources in
+application distributions. Existing applications must migrate their imports
+and verify an isolated installation before removing OMPR from runtime
+requirements; ordinary updates report this work rather than changing their code.
 
 ## CLI Design Standards
 
@@ -506,7 +533,9 @@ All CLI applications should:
 ## Environment & Dependency Policy
 
 - Target Python 3.10+\
-- Use requirements.txt unless packaged\
+- Use `pyproject.toml` as the authoritative packaged-Python dependency definition\
+- Use a project-specific camelCase Conda environment file and editable install\
+- Do not make `requirements.txt` the primary dependency mechanism for new packaged projects\
 - Do not auto-install dependencies at runtime\
 - Fail fast if external tools are missing\
 - Validate system requirements explicitly
@@ -523,7 +552,8 @@ All CLI applications should:
 
 ### Logging Pattern (logUtils)
 
-All projects must use centralized logging from `organiseMyProjects.logUtils`.
+Consumer applications use centralised logging from deployed `ompr.logUtils`;
+OMPR tooling uses its canonical `organiseMyProjects.logUtils`.
 Do not include "..." manually in log messages. logUtils owns prefixes/suffixes.
 
 #### Application context
@@ -535,7 +565,7 @@ Each project sets its application context once in the root entry point:
 Use the project folder name unless there is a deliberate reason to override it:
 
     from pathlib import Path
-    from organiseMyProjects.logUtils import getLogger, setApplication
+    from ompr.logUtils import getLogger, setApplication
 
     thisApplication = Path(__file__).parent.name
     setApplication(thisApplication)
@@ -554,7 +584,7 @@ Helper modules must not import `thisApplication` from `main.py` and must not red
 
 Use this pattern everywhere outside the entry point:
 
-    from organiseMyProjects.logUtils import getLogger
+    from ompr.logUtils import getLogger
 
     logger = getLogger()
 
@@ -566,7 +596,7 @@ Initialise the application context before importing modules that rely on logging
 
 ``` python
 from pathlib import Path
-from organiseMyProjects.logUtils import getLogger, setApplication
+from ompr.logUtils import getLogger, line, runStart, setApplication
 
 thisApplication = Path(__file__).parent.name
 setApplication(thisApplication)
@@ -597,15 +627,18 @@ def main() -> None:
 
     logger = getLogger(includeConsole=True, dryRun=dryRun)
 
+    runStart()
     logger.doing("starting")
+    line()
     # work here
+    line()
     logger.done("finished")
 ```
 
 Use this in helper modules (do not use `setApplication()` in helper modules):
 
 ``` python
-from organiseMyProjects.logUtils import getLogger
+from ompr.logUtils import getLogger
 
 logger = getLogger()
 ```
@@ -617,6 +650,53 @@ logger = getLogger()
 ```
 
 After context is set, do not pass `name` or `logDir` for normal app logging.
+
+#### Section separators
+
+Call `logUtils.runStart()` once after `setApplication()` and before the first
+application header. It writes a blank line, `>` followed by 80 hyphens and `<`,
+then another blank line, directly to stdout and today's application log file.
+Subcommands must not repeat a marker already emitted by their dispatcher.
+The Bash equivalent is `runStart` from `logUtils.sh`, called after
+`setApplication` and before the script header. Sourcing the helper does not emit
+a marker. Bash `line` provides the same 80-hyphen section separator as
+Python `logUtils.line()`, also writing directly to stdout and the log file.
+
+After the complete command header and immediately before any final summary,
+call `logUtils.line()`. It writes exactly 80 hyphens and a newline directly to
+stdout and today's application log file, without logging records or prefixes.
+Initialise the application context with `setApplication()` first. Use the shared
+helper instead of hand-built separator strings or `logger.info()` separators.
+The public `line()` helper is an explicit exception to module-level domainAction
+naming. Only entry points establish application context; helpers reuse it.
+
+```python
+from ompr import logUtils
+
+logUtils.setApplication("example")
+logger = logUtils.getLogger(includeConsole=True)
+logUtils.runStart()
+logger.doing("starting")
+logUtils.line()
+# Perform the command's work and report details here.
+logUtils.line()
+logger.value("processed", count)
+logger.done("finished")
+```
+
+
+`runLinter` checks conventional Python entry points (`main()`, functions calling
+`setApplication()`, and inline `__main__` guards) that emit `logger.*` headers:
+
+- `LOG-SEC-001`: missing `runStart()` before the first header log call.
+- `LOG-SEC-002`: missing `line()` immediately after the contiguous header logs.
+- `LOG-SEC-003`: missing `line()` before summary logs ending with `logger.done()`.
+
+Direct calls and `logUtils.runStart()` / `logUtils.line()` are recognised.
+Comments and strings do not count. Tests, ordinary helpers and dispatchers with
+no header output are excluded. These are static convention checks: arbitrary
+logger aliases, print-only headers, output delegated to helper functions, and
+Bash scripts are not analysed for section placement.
 
 #### Semantic log methods
 
@@ -687,7 +767,7 @@ External dependencies must fail fast. Never silently replace `logUtils`:
 ``` python
 # Do not do this
 try:
-    from organiseMyProjects.logUtils import getLogger, setApplication
+    from ompr.logUtils import getLogger, setApplication
 except Exception:
     import logging
 ```
@@ -695,7 +775,7 @@ except Exception:
 Use this instead:
 
 ``` python
-from organiseMyProjects.logUtils import getLogger
+from ompr.logUtils import getLogger
 ```
 
 If `setApplication()` has not been called before `getLogger()` is used without an explicit name, the program must raise a `RuntimeError`. This is intentional.
@@ -705,7 +785,7 @@ Do not call `logging.basicConfig()` in application modules.
 #### `drawBox()` for prominent log entries
 
 ``` python
-from organiseMyProjects.logUtils import drawBox
+from ompr.logUtils import drawBox
 
 drawBox("Sync complete\n3 updated, 0 failed", logger=logger)
 ```
@@ -717,7 +797,7 @@ Bash scripts must source `logUtils.sh` from the `organiseMyProjects` package.
 ##### Sourcing and initialisation
 
 ``` bash
-source "$(python3 -c 'import organiseMyProjects, os; print(os.path.dirname(organiseMyProjects.__file__))')/logUtils.sh"
+source "${applicationRoot}/ompr/logUtils.sh"
 setApplication "myScript"
 ```
 
@@ -805,7 +885,7 @@ Rules:
 
 - Use JSON objects, not `key=value` files\
 - Preserve existing and unknown keys when updating config\
-- Use clear, stable key names such as `source`, `month`, or `groupName`\
+- Use clear, stable camelCase key names such as `source`, `month`, or `groupName`\
 - Validate config values before using them\
 - Create the config directory only when writing config\
 - Preference updates, such as saving a `--source` override, may be written even during dry-run\
@@ -850,6 +930,37 @@ Refactor when:
 - Class \> 300 lines\
 - Nesting \> 3 levels\
 - Repeated logic appears twice
+
+## Development Status and Documentation Ownership
+
+Status has one owner. Requirements describe obligations, design documentation
+describes behaviour, and Git records delivery history.
+`project/currentIncrement.md` alone records transient implementation status.
+
+When implementing or completing an increment, update
+`project/currentIncrement.md` with the active increment, objective, scope,
+acceptance work, verification still required and immediate next action. Replace
+the previous increment's transient detail when the next increment starts; do
+not turn the file into a running delivery history.
+
+Do not propagate implementation-status statements into requirements, README
+files, ADRs or design documentation unless the work changes the durable truth
+that document is responsible for describing:
+
+- requirements record durable obligations and acceptance criteria; supported
+  lifecycle metadata such as `ToDo`, `InProgress` and `Completed` may remain;
+- ADRs record architectural decisions and rationale;
+- `documentation/` describes durable implemented behaviour and changes when
+  that behaviour or design changes;
+- `README.md` provides a stable introduction, capabilities and navigation, and
+  changes for meaningful durable capability or release changes where useful;
+- tests provide executable acceptance and regression evidence; and
+- commits, pull requests, tags and releases record what was delivered and when.
+
+For example, an algorithm behaviour change updates its durable design guide; a
+requirement scope change updates the requirement; completing one increment and
+starting another updates `project/currentIncrement.md` and relies on Git for
+the delivery history.
 
 ## Common Principles to Always Follow
 

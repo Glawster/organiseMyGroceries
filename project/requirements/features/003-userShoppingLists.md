@@ -1,6 +1,8 @@
-# 003 — User Shopping Lists
+# 003: User Shopping Lists
 
-**Status:** ToDo
+## Status
+
+ToDo
 
 ## Objective
 
@@ -45,3 +47,7 @@ Allow multiple people to maintain independent shopping lists while sharing the c
 * Saving one user cannot modify another user's data.
 * Removing or deactivating a catalogue item is handled predictably when referenced by a user.
 * List loading, modification and saving are testable independently of the web UI.
+
+## Change history
+
+* 2026-11-22: name corrected to follow documentation/requirementsManagement.md.

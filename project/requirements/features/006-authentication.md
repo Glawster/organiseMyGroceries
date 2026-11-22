@@ -1,6 +1,8 @@
-# 006 — Authentication and User Isolation
+# 006: Authentication and User Isolation
 
-**Status:** ToDo
+## Status
+
+ToDo
 
 ## Objective
 
@@ -118,3 +120,7 @@ groceries user disable <user>
 * Requirement 005 — Store Integration
 * Requirement 007 — Production Deployment
 * ADR-003 — Command Line Object Model
+
+## Change history
+
+* 2026-11-22: name corrected to follow documentation/requirementsManagement.md.
