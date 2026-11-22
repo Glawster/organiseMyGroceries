@@ -25,5 +25,7 @@
 
 - Shopping lists may contain personal purchasing information and must not be
   committed.
-- All converted and exported lists belong beneath the root `output/` directory.
+- Shopping lists (imported, created and exported) belong beneath the root
+  `lists/` directory; other generated files, such as the catalogue, belong
+  beneath the root `output/` directory. Both are git-ignored.
 - Tests must use fictional shopping-list data and `tmp_path`.

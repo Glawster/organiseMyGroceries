@@ -51,9 +51,9 @@ Preview a catalogue import without writing JSON:
 groceries catalogue import --source groceries.txt
 ```
 
-Import a text shopping list into `output/weekly.json`, then edit it in the
+Import a text shopping list into `lists/weekly.json`, then edit it in the
 terminal UI. Without a list name, `--ui` lets you choose from every list in
-`output/`:
+`lists/`:
 
 ```bash
 groceries list import --source weekly.txt --confirm

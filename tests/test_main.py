@@ -66,18 +66,18 @@ def testCliBuildParserListSendRequiresSource() -> None:
 
 
 def testCliRunListSendResolvesListName(tmp_path, monkeypatch) -> None:
-    """A bare list name means output/<name>.json."""
+    """A bare list name means lists/<name>.json."""
 
     monkeypatch.chdir(tmp_path)
-    (tmp_path / "output").mkdir()
-    (tmp_path / "output" / "weekly.json").write_text('[{"name": "Milk"}]')
+    (tmp_path / "lists").mkdir()
+    (tmp_path / "lists" / "weekly.json").write_text('[{"name": "Milk"}]')
     loaded: list[Path] = []
     monkeypatch.setattr(
         main, "listLoad", lambda source, *_args, **_kw: loaded.append(source) or []
     )
 
     assert main.cliRun(["list", "send", "-s", "weekly"]) == 0
-    assert loaded == [Path("output/weekly.json")]
+    assert loaded == [Path("lists/weekly.json")]
 
 
 def testCliBuildParserRejectsLegacyTopLevelAdd() -> None:
@@ -192,7 +192,7 @@ def testCliRunCatalogueImportReturnsFailureForMissingSource(
 
 
 def testCliRunListExportConfirmedWritesText(tmp_path, monkeypatch) -> None:
-    """List export writes active names under output/ when confirmed."""
+    """List export writes active names under lists/ when confirmed."""
 
     monkeypatch.chdir(tmp_path)
     source = tmp_path / "items.json"
@@ -201,7 +201,7 @@ def testCliRunListExportConfirmedWritesText(tmp_path, monkeypatch) -> None:
     status = main.cliRun(["list", "export", "--source", str(source), "--confirm"])
 
     assert status == 0
-    assert (tmp_path / "output" / "items.txt").read_text() == "Milk\n"
+    assert (tmp_path / "lists" / "items.txt").read_text() == "Milk\n"
 
 
 def testCliBuildParserSupportsListImport() -> None:
@@ -215,12 +215,12 @@ def testCliBuildParserSupportsListImport() -> None:
 
 
 def testCliRunListImportWritesOnlyWhenConfirmed(tmp_path, monkeypatch) -> None:
-    """list import previews by default and writes output/<name>.json on confirm."""
+    """list import previews by default and writes lists/<name>.json on confirm."""
 
     monkeypatch.chdir(tmp_path)
     source = tmp_path / "weekly.txt"
     source.write_text("Milk\nBread\n")
-    output = tmp_path / "output" / "weekly.json"
+    output = tmp_path / "lists" / "weekly.json"
 
     assert main.cliRun(["list", "import", "-s", str(source)]) == 0
     assert not output.exists()
@@ -232,15 +232,15 @@ def testCliRunListImportWritesOnlyWhenConfirmed(tmp_path, monkeypatch) -> None:
 
 
 def testCliRunListImportUsesOutputName(tmp_path, monkeypatch) -> None:
-    """--output names the new list instead of the text file's name."""
+    """--name names the new list instead of the text file's name."""
 
     monkeypatch.chdir(tmp_path)
     source = tmp_path / "list.txt"
     source.write_text("Milk\n")
 
-    assert main.cliRun(["list", "import", "-s", str(source), "-o", "party", "-y"]) == 0
-    assert (tmp_path / "output" / "party.json").is_file()
-    assert not (tmp_path / "output" / "list.json").exists()
+    assert main.cliRun(["list", "import", "-s", str(source), "-n", "party", "-y"]) == 0
+    assert (tmp_path / "lists" / "party.json").is_file()
+    assert not (tmp_path / "lists" / "list.json").exists()
 
 
 def testCliBuildParserUiWithoutListMeansPicker() -> None:
@@ -265,18 +265,18 @@ def testCliRunUiWithoutListOpensPicker(monkeypatch) -> None:
 
 
 def testCliRunUiResolvesListName(tmp_path, monkeypatch) -> None:
-    """--ui weekly opens output/weekly.json."""
+    """--ui weekly opens lists/weekly.json."""
 
     from organiseMyGroceries.ui import listApp
 
     monkeypatch.chdir(tmp_path)
-    (tmp_path / "output").mkdir()
-    (tmp_path / "output" / "weekly.json").write_text('[{"name": "Milk"}]')
+    (tmp_path / "lists").mkdir()
+    (tmp_path / "lists" / "weekly.json").write_text('[{"name": "Milk"}]')
     ran: list[object] = []
     monkeypatch.setattr(listApp.ListApp, "run", lambda self: ran.append(self.listPath))
 
     assert main.cliRun(["--ui", "weekly"]) == 0
-    assert ran == [Path("output/weekly.json")]
+    assert ran == [Path("lists/weekly.json")]
 
 
 def testCliRunRequiresCommandOrUi() -> None:

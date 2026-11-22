@@ -23,10 +23,10 @@ def testListImportCreatesExpectedSchema(tmp_path: Path, monkeypatch) -> None:
     source = tmp_path / "shopping.txt"
     source.write_text("Soda farl\n\nMilk\n")
 
-    output = shoppingList.listImport(source, Path("output"))
+    output = shoppingList.listImport(source, Path("lists"))
 
     data = json.loads(output.read_text())
-    assert output == tmp_path / "output" / "shopping.json"
+    assert output == tmp_path / "lists" / "shopping.json"
     assert [record["name"] for record in data] == ["Soda farl", "Milk"]
     assert data[0]["id"] == "item-1"
     assert data[0]["active"] is True
@@ -39,11 +39,11 @@ def testListImportNeverOverwritesExistingList(tmp_path: Path, monkeypatch) -> No
     monkeypatch.chdir(tmp_path)
     source = tmp_path / "shopping.txt"
     source.write_text("Milk\n")
-    output = shoppingList.listImport(source, Path("output"))
+    output = shoppingList.listImport(source, Path("lists"))
     output.write_text('[{"id": "item-1", "name": "Edited"}]')
 
     with pytest.raises(ValueError, match="already exists"):
-        shoppingList.listImport(source, Path("output"))
+        shoppingList.listImport(source, Path("lists"))
 
     assert "Edited" in output.read_text()
 
@@ -55,33 +55,33 @@ def testListImportUsesGivenName(tmp_path: Path, monkeypatch) -> None:
     source = tmp_path / "list.txt"
     source.write_text("Milk\n")
 
-    output = shoppingList.listImport(source, Path("output"), name="party")
+    output = shoppingList.listImport(source, Path("lists"), name="party")
 
-    assert output == (tmp_path / "output" / "party.json").resolve()
+    assert output == (tmp_path / "lists" / "party.json").resolve()
     assert output.is_file()
 
 
 def testListImportRejectsUnusableName(tmp_path: Path, monkeypatch) -> None:
-    """A name that is not a plain word cannot escape output/."""
+    """A name that is not a plain word cannot escape lists/."""
 
     monkeypatch.chdir(tmp_path)
     source = tmp_path / "list.txt"
     source.write_text("Milk\n")
 
     with pytest.raises(ValueError, match="list name"):
-        shoppingList.listImport(source, Path("output"), name="../escape")
+        shoppingList.listImport(source, Path("lists"), name="../escape")
 
 
 def testListImportHonoursDryRun(tmp_path: Path, monkeypatch) -> None:
-    """Preview import creates neither the output directory nor the list."""
+    """Preview import creates neither the lists directory nor the list."""
 
     monkeypatch.chdir(tmp_path)
     source = tmp_path / "shopping.txt"
     source.write_text("Milk\n")
 
-    shoppingList.listImport(source, Path("output"), dryRun=True)
+    shoppingList.listImport(source, Path("lists"), dryRun=True)
 
-    assert not (tmp_path / "output").exists()
+    assert not (tmp_path / "lists").exists()
 
 
 def testListLoadTextKeepsExistingImportedList(tmp_path: Path, monkeypatch) -> None:
@@ -90,11 +90,11 @@ def testListLoadTextKeepsExistingImportedList(tmp_path: Path, monkeypatch) -> No
     monkeypatch.chdir(tmp_path)
     source = tmp_path / "shopping.txt"
     source.write_text("Apples\n")
-    existing = tmp_path / "output" / "shopping.json"
+    existing = tmp_path / "lists" / "shopping.json"
     existing.parent.mkdir()
     existing.write_text('[{"id": "item-1", "name": "Edited"}]')
 
-    items = shoppingList.listLoad(source, Path("output"), dryRun=False)
+    items = shoppingList.listLoad(source, Path("lists"), dryRun=False)
 
     assert items == ["Apples"]
     assert "Edited" in existing.read_text()
@@ -107,20 +107,20 @@ def testListExportHonoursDryRun(tmp_path: Path, monkeypatch) -> None:
     source = tmp_path / "shopping.json"
     source.write_text(json.dumps(_sampleItems()))
 
-    output = shoppingList.listExport(source, Path("output"), dryRun=True)
+    output = shoppingList.listExport(source, Path("lists"), dryRun=True)
 
-    assert output == tmp_path / "output" / "shopping.txt"
+    assert output == tmp_path / "lists" / "shopping.txt"
     assert not output.exists()
 
 
 def testListExportWritesActiveItems(tmp_path: Path, monkeypatch) -> None:
-    """The production export path writes active search terms under output."""
+    """The production export path writes active search terms under lists/"""
 
     monkeypatch.chdir(tmp_path)
     source = tmp_path / "shopping.json"
     source.write_text(json.dumps(_sampleItems()))
 
-    output = shoppingList.listExport(source, Path("output"))
+    output = shoppingList.listExport(source, Path("lists"))
 
     assert output.read_text() == "Soda farl\nMilk\n"
 
@@ -133,7 +133,7 @@ def testListLoadRejectsInvalidRecords(tmp_path: Path, monkeypatch) -> None:
     source.write_text('[{"active": true}]')
 
     with pytest.raises(ValueError, match="active item 1.*needs a name"):
-        shoppingList.listLoad(source, Path("output"))
+        shoppingList.listLoad(source, Path("lists"))
 
 
 def testListLoadRejectsMissingSource(tmp_path: Path, monkeypatch) -> None:
@@ -142,7 +142,7 @@ def testListLoadRejectsMissingSource(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.chdir(tmp_path)
 
     with pytest.raises(ValueError, match="source file does not exist"):
-        shoppingList.listLoad(Path("missing.json"), Path("output"))
+        shoppingList.listLoad(Path("missing.json"), Path("lists"))
 
 
 def testListLoadTextPreviewHasNoSideEffects(tmp_path: Path, monkeypatch) -> None:
@@ -152,10 +152,10 @@ def testListLoadTextPreviewHasNoSideEffects(tmp_path: Path, monkeypatch) -> None
     source = tmp_path / "shopping.txt"
     source.write_text(" Apples\nBananas\n")
 
-    items = shoppingList.listLoad(source, Path("output"), dryRun=True)
+    items = shoppingList.listLoad(source, Path("lists"), dryRun=True)
 
     assert items == ["Apples", "Bananas"]
-    assert not (tmp_path / "output").exists()
+    assert not (tmp_path / "lists").exists()
 
 
 def testListLoadTextConfirmedCreatesConvertedOutput(
@@ -167,11 +167,11 @@ def testListLoadTextConfirmedCreatesConvertedOutput(
     source = tmp_path / "shopping.txt"
     source.write_text("Apples\n")
 
-    items = shoppingList.listLoad(source, Path("output"), dryRun=False)
+    items = shoppingList.listLoad(source, Path("lists"), dryRun=False)
 
     assert items == ["Apples"]
     assert (
-        json.loads((tmp_path / "output" / "shopping.json").read_text())[0]["name"]
+        json.loads((tmp_path / "lists" / "shopping.json").read_text())[0]["name"]
         == "Apples"
     )
 
@@ -194,7 +194,7 @@ def testListLoadRejectsMalformedJsonShapes(
     source.write_text(content)
 
     with pytest.raises(ValueError, match=message):
-        shoppingList.listLoad(source, Path("output"))
+        shoppingList.listLoad(source, Path("lists"))
 
 
 def testListLoadRejectsUnsupportedSuffix(tmp_path: Path, monkeypatch) -> None:
@@ -205,7 +205,7 @@ def testListLoadRejectsUnsupportedSuffix(tmp_path: Path, monkeypatch) -> None:
     source.write_text("Milk\n")
 
     with pytest.raises(ValueError, match="must use one of"):
-        shoppingList.listLoad(source, Path("output"))
+        shoppingList.listLoad(source, Path("lists"))
 
 
 def testListExportEmptyListWritesEmptyFile(tmp_path: Path, monkeypatch) -> None:
@@ -215,7 +215,7 @@ def testListExportEmptyListWritesEmptyFile(tmp_path: Path, monkeypatch) -> None:
     source = tmp_path / "shopping.json"
     source.write_text("[]")
 
-    output = shoppingList.listExport(source, Path("output"))
+    output = shoppingList.listExport(source, Path("lists"))
 
     assert output.read_text() == ""
 

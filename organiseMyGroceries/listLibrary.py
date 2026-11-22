@@ -1,7 +1,7 @@
-"""Named shopping lists kept as JSON documents beneath output/.
+"""Named shopping lists kept as JSON documents beneath lists/.
 
 A list can be referred to by a short name such as ``weekly``, which means
-``output/weekly.json``, or by an explicit path. This module resolves names,
+``lists/weekly.json``, or by an explicit path. This module resolves names,
 summarises the lists available to choose from, and creates new empty lists.
 """
 
@@ -9,9 +9,9 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from organiseMyGroceries.files import LIST_DIRECTORY
 from organiseMyGroceries.listDocument import listDocumentLoad, listDocumentSave
 
-LIST_DIRECTORY = Path("output")
 LIST_SUFFIXES = {".json", ".txt"}
 NAME_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
 

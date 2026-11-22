@@ -13,9 +13,9 @@ organiseMyGroceries list export --source weekly
 organiseMyGroceries --ui
 ```
 
-You can keep as many lists as you like. Each list is a JSON file in `output/`,
+You can keep as many lists as you like. Each list is a JSON file in `lists/`,
 and commands accept a list's name instead of its path: `weekly` means
-`output/weekly.json`. A value with a directory or a `.json`/`.txt` suffix is
+`lists/weekly.json`. A value with a directory or a `.json`/`.txt` suffix is
 used as a path. List names use letters, digits, `-` and `_`.
 
 `list send` is store-neutral. Tesco is the current store adapter; other stores
@@ -50,17 +50,17 @@ See [Grocery catalogue](groceryCatalogue/groceryCatalogueIndex.md) for the docum
 ## Import a list
 
 Create a JSON shopping list from a one-item-per-line text file. Preview is the
-default. The list is named after the text file unless you give `--output`:
+default. The list is named after the text file unless you give `--name`:
 
 ```bash
 organiseMyGroceries list import --source weekly.txt              # preview
-organiseMyGroceries list import --source weekly.txt --confirm    # output/weekly.json
-organiseMyGroceries list import --source list.txt --output party --confirm  # output/party.json
+organiseMyGroceries list import --source weekly.txt --confirm    # lists/weekly.json
+organiseMyGroceries list import --source list.txt --name party --confirm  # lists/party.json
 ```
 
 Import never overwrites an existing list, because it may contain edits made in
 the terminal UI. Edit the existing list instead, or import under another name
-with `--output`.
+with `--name`.
 
 ## Edit a list in the terminal UI
 
@@ -68,13 +68,13 @@ Open the terminal UI without a list to choose one, or name the list to open it
 directly:
 
 ```bash
-organiseMyGroceries --ui           # choose from the lists in output/
-organiseMyGroceries --ui weekly    # open output/weekly.json
+organiseMyGroceries --ui           # choose from the lists in lists/
+organiseMyGroceries --ui weekly    # open lists/weekly.json
 ```
 
 ### Choose a list
 
-The list picker shows each list in `output/` with its item and active counts.
+The list picker shows each list in `lists/` with its item and active counts.
 Other JSON files there, such as the catalogue, are not shown.
 
 | Key | Action |
@@ -152,12 +152,12 @@ available Add button.
 organiseMyGroceries list send --source weekly --confirm
 ```
 
-Confirmed text-list input is also imported to `output/<source-name>.json`
+Confirmed text-list input is also imported to `lists/<source-name>.json`
 unless that list already exists. Generated files never overwrite the source.
 
 ## Export a list
 
-Export active JSON entries to `output/<list-name>.txt`:
+Export active JSON entries to `lists/<list-name>.txt`:
 
 ```bash
 organiseMyGroceries list export --source weekly

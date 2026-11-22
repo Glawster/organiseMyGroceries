@@ -2,16 +2,22 @@
 
 from pathlib import Path
 
+# Shopping lists hold personal purchasing data and live in lists/; other
+# generated files, such as the shared catalogue, live in output/.
+OUTPUT_DIRECTORY = Path("output")
+LIST_DIRECTORY = Path("lists")
+
 ## output
 
 
 def outputResolve(directory: Path, stem: str, suffix: str) -> Path:
-    """Resolve a generated artifact beneath the project output directory."""
+    """Resolve a generated artifact beneath output/ or lists/."""
 
-    outputRoot = Path("output").resolve()
     directoryPath = directory.resolve()
-    if directoryPath != outputRoot:
-        raise ValueError(f"output directory must be '{outputRoot}'")
+    allowed = [each.resolve() for each in (OUTPUT_DIRECTORY, LIST_DIRECTORY)]
+    if directoryPath not in allowed:
+        expected = " or ".join(f"'{each}'" for each in allowed)
+        raise ValueError(f"output directory must be {expected}")
     return directoryPath / f"{stem}{suffix}"
 
 

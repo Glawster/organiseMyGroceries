@@ -29,17 +29,17 @@ catalogue remains available as common product data.
 ### Import
 
 * `groceries list import --source <list>.txt` creates
-  `output/<list>.json` from a one-item-per-line text file; `--output NAME`
+  `lists/<list>.json` from a one-item-per-line text file; `--name NAME`
   names the new list instead.
 * Import is a preview unless `--confirm` is given.
 * Import never overwrites an existing JSON list, because it may contain edits.
 
 ### Named lists
 
-* A person can keep any number of lists. Each is `output/<name>.json`, and
+* A person can keep any number of lists. Each is `lists/<name>.json`, and
   every list command accepts the name in place of a path.
 * List names use letters, digits, `-` and `_`, so a name can never point
-  outside `output/`.
+  outside `lists/`.
 * `list send` and `list export` require the list to be named; there is no
   default list.
 
@@ -47,7 +47,7 @@ catalogue remains available as common product data.
 
 * `groceries --ui <list>` opens one list in a Textual terminal UI.
 * `groceries --ui` without a list opens a list picker showing each list in
-  `output/` with its item and active counts. It opens a list, creates a new
+  `lists/` with its item and active counts. It opens a list, creates a new
   empty list, and returns to the picker when a list is closed. JSON files that
   are not shopping lists are not shown.
 * The UI supports adding, editing, activating/deactivating and removing items,
@@ -84,7 +84,7 @@ web application (004):
 ## Acceptance criteria
 
 * A text list can be previewed and then imported into a JSON list under
-  `output/`, and a second import cannot overwrite it.
+  `lists/`, and a second import cannot overwrite it.
 * Two users' list documents can hold different items, and saving one does not
   modify the other.
 * Several named lists can be kept, chosen from the picker or named on the
@@ -109,5 +109,5 @@ web application (004):
 * 2026-11-22: scope changed to imported JSON lists edited in a Textual terminal
   UI launched with `groceries --ui`; catalogue-linked lists deferred.
 * 2026-11-22: multiple named lists, a list picker for `groceries --ui`, and
-  `list import --output`; the `output/shoppingList.json` default was removed
-  (0.2a2).
+  `list import --name`; lists moved from `output/` to `lists/` and the
+  `output/shoppingList.json` default was removed (0.2a2).

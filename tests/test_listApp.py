@@ -198,7 +198,7 @@ def testListAppButtonsRunTheSameActions(tmp_path: Path) -> None:
 def _listsWrite(tmp_path: Path) -> Path:
     """Two fictional lists plus a catalogue that the picker must ignore."""
 
-    directory = tmp_path / "output"
+    directory = tmp_path / "lists"
     directory.mkdir()
     (directory / "party.json").write_text(json.dumps([{"name": "Crisps"}]))
     _listWrite(directory).rename(directory / "weekly.json")
@@ -306,9 +306,9 @@ def testPickerRejectsExistingListName(tmp_path: Path) -> None:
 
 
 def testPickerExplainsWhenThereAreNoLists(tmp_path: Path) -> None:
-    """An empty or missing output directory shows how to start."""
+    """An empty or missing lists directory shows how to start."""
 
     async def scenario(app: ListApp, pilot: Pilot) -> str:
         return str(app.screen.query_one("#status", Static).render())
 
-    assert "press n to create one" in _appRun(None, scenario, tmp_path / "output")
+    assert "press n to create one" in _appRun(None, scenario, tmp_path / "lists")

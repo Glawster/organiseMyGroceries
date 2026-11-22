@@ -17,7 +17,8 @@ logger = getLogger(includeConsole=False)
 
 # Application modules are imported only after the logging context is ready.
 from organiseMyGroceries.catalogue import catalogueImport
-from organiseMyGroceries.listLibrary import LIST_DIRECTORY, listPathResolve
+from organiseMyGroceries.files import LIST_DIRECTORY, OUTPUT_DIRECTORY
+from organiseMyGroceries.listLibrary import listPathResolve
 from organiseMyGroceries.shoppingList import listExport, listImport, listLoad
 from organiseMyGroceries.tesco import basketAdd
 
@@ -99,16 +100,16 @@ def _commandDispatch(args: argparse.Namespace, dryRun: bool) -> None:
     """Delegate one parsed object/action pair to domain code."""
 
     if args.object == "catalogue":
-        catalogueImport(args.source, Path("output"), dryRun=dryRun)
+        catalogueImport(args.source, OUTPUT_DIRECTORY, dryRun=dryRun)
         return
     if args.action == "export":
-        listExport(args.source, Path("output"), dryRun=dryRun)
+        listExport(args.source, LIST_DIRECTORY, dryRun=dryRun)
         return
     if args.action == "import":
-        listImport(args.source, Path("output"), dryRun=dryRun, name=args.output)
+        listImport(args.source, LIST_DIRECTORY, dryRun=dryRun, name=args.name)
         return
 
-    items = listLoad(args.source, Path("output"), dryRun=dryRun)
+    items = listLoad(args.source, LIST_DIRECTORY, dryRun=dryRun)
     logger.value("items found", len(items))
     if dryRun:
         logger.info("preview complete; confirmation opens the grocery store")
@@ -203,7 +204,7 @@ def _parserAddList(subparsers: Any) -> None:
     actions = listParser.add_subparsers(dest="action", required=True)
 
     importParser = actions.add_parser(
-        "import", help="import a text list into output/<name>.json"
+        "import", help="import a text list into lists/<name>.json"
     )
     _optionSourceAdd(
         importParser,
@@ -211,14 +212,14 @@ def _parserAddList(subparsers: Any) -> None:
         required=True,
     )
     importParser.add_argument(
-        "-o",
-        "--output",
+        "-n",
+        "--name",
         metavar="NAME",
         help="name of the new list (default: the text file's name)",
     )
     _optionConfirmAdd(
         importParser,
-        "write output/<name>.json (default is dry-run)",
+        "write lists/<name>.json (default is dry-run)",
     )
 
     sendParser = actions.add_parser(
@@ -226,7 +227,7 @@ def _parserAddList(subparsers: Any) -> None:
     )
     _optionSourceAdd(
         sendParser,
-        "list name (output/NAME.json), or a JSON or text list path",
+        "list name (lists/NAME.json), or a JSON or text list path",
         required=True,
     )
     _optionConfirmAdd(
@@ -237,10 +238,10 @@ def _parserAddList(subparsers: Any) -> None:
     exportParser = actions.add_parser("export", help="export active JSON items as text")
     _optionSourceAdd(
         exportParser,
-        "list name (output/NAME.json) or JSON list path",
+        "list name (lists/NAME.json) or JSON list path",
         required=True,
     )
     _optionConfirmAdd(
         exportParser,
-        "write output/<source-name>.txt (default is dry-run)",
+        "write lists/<name>.txt (default is dry-run)",
     )

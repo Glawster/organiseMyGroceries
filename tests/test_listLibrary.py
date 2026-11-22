@@ -1,4 +1,4 @@
-"""Tests for named shopping lists under output/."""
+"""Tests for named shopping lists under lists/."""
 
 import json
 from pathlib import Path
@@ -14,14 +14,14 @@ from organiseMyGroceries.listLibrary import (
 
 
 def testListPathResolveTreatsBareNameAsListName() -> None:
-    """A bare name means output/<name>.json."""
+    """A bare name means lists/<name>.json."""
 
-    assert listPathResolve("weekly") == Path("output/weekly.json")
+    assert listPathResolve("weekly") == Path("lists/weekly.json")
     assert listPathResolve("weekly", Path("lists")) == Path("lists/weekly.json")
 
 
 @pytest.mark.parametrize(
-    "reference", ["weekly.json", "list.txt", "output/weekly.json", "/tmp/a.json"]
+    "reference", ["weekly.json", "list.txt", "lists/weekly.json", "/tmp/a.json"]
 )
 def testListPathResolveKeepsPaths(reference: str) -> None:
     """Anything with a suffix or a directory is already a path."""
@@ -50,7 +50,7 @@ def testListSummariseListsOnlyShoppingLists(tmp_path: Path) -> None:
 
 
 def testListSummariseMissingDirectoryIsEmpty(tmp_path: Path) -> None:
-    """No output directory yet simply means no lists."""
+    """No lists directory yet simply means no lists."""
 
     assert listSummarise(tmp_path / "missing") == []
 
@@ -58,16 +58,16 @@ def testListSummariseMissingDirectoryIsEmpty(tmp_path: Path) -> None:
 def testListCreateWritesEmptyList(tmp_path: Path) -> None:
     """A new list is an empty JSON list, and its directory is created."""
 
-    path = listCreate("weekly", tmp_path / "output")
+    path = listCreate("weekly", tmp_path / "lists")
 
     assert json.loads(path.read_text()) == []
     with pytest.raises(ValueError, match="already exists"):
-        listCreate("weekly", tmp_path / "output")
+        listCreate("weekly", tmp_path / "lists")
 
 
 @pytest.mark.parametrize("name", ["", "-x", "a b", "../up", "a/b", "w.json"])
 def testListNameValidateRejectsUnusableNames(name: str) -> None:
-    """Names are single words so they always stay inside output/."""
+    """Names are single words so they always stay inside lists/."""
 
     with pytest.raises(ValueError, match="list name"):
         listNameValidate(name)

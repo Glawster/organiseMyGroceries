@@ -6,6 +6,7 @@ build/
 dist/
 logs/
 output/
+lists/
 *.log
 *.pyc
 shoppingList.json

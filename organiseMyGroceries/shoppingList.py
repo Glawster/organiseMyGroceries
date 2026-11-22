@@ -37,7 +37,7 @@ def listImport(
     dryRun: bool = False,
     name: str | None = None,
 ) -> Path:
-    """Import a plain-text shopping list into a new JSON list under output/.
+    """Import a plain-text shopping list into a new JSON list under lists/.
 
     The list is named after the text file unless ``name`` is given. An
     existing JSON list is never overwritten because it may hold edits made in
@@ -51,7 +51,7 @@ def listImport(
         raise ValueError(
             f"a list called '{listName}' already exists: edit it with "
             f"'groceries --ui {listName}', or import under another name with "
-            "--output NAME"
+            "--name NAME"
         )
     lines = textLinesRead(source)
     records = [

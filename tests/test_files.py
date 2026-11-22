@@ -32,3 +32,16 @@ def testOutputResolveRejectsNonOutputDirectory(tmp_path, monkeypatch) -> None:
 
     with pytest.raises(ValueError, match="output directory must be"):
         files.outputResolve(Path("elsewhere"), "catalogue", ".json")
+
+
+def testOutputResolveAcceptsListsAndOutput(tmp_path, monkeypatch) -> None:
+    """Shopping lists go in lists/ and other generated files in output/."""
+
+    monkeypatch.chdir(tmp_path)
+
+    assert files.outputResolve(files.LIST_DIRECTORY, "weekly", ".json") == (
+        tmp_path / "lists" / "weekly.json"
+    )
+    assert files.outputResolve(files.OUTPUT_DIRECTORY, "catalogue", ".json") == (
+        tmp_path / "output" / "catalogue.json"
+    )

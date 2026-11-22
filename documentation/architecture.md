@@ -24,7 +24,7 @@ CLI input
   -> catalogue.py shared catalogue import, identity, and validation
   -> shoppingList.py list import, send terms, and text export
   -> listDocument.py JSON list model: load, validate, edit, atomic save
-  -> listLibrary.py named lists under output/ (name resolution, summaries)
+  -> listLibrary.py named lists under lists/ (name resolution, summaries)
   -> ui/ Textual terminal UI: list picker and list editor (--ui only)
   -> tesco.py store adapter (confirmed list send only)
   -> grocery store website
@@ -46,8 +46,9 @@ document, identity, and import rules.
 
 ## Data boundaries
 
-Source lists are user-owned inputs. Derived catalogues, JSON, and text files are
-written only beneath the ignored root `output/` directory. Fictional catalogue
+Source lists are user-owned inputs. Shopping lists (imported, created and
+exported) are written only beneath the ignored root `lists/` directory, and other
+derived files such as the catalogue beneath the ignored root `output/`. Fictional catalogue
 fixtures used by tests live in `data/groceryCatalogue/`. Application logs are
 managed by `organiseMyProjects.logUtils` beneath the user's local state
 directory.
