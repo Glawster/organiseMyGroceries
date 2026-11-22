@@ -2,19 +2,23 @@
 
 ## Objective
 
-Deliver requirement [003 — User Shopping Lists](requirements/features/003-userShoppingLists.md): persist independent per-user selections against the shared grocery catalogue.
+Deliver requirement [003 — User Shopping Lists](requirements/features/003-userShoppingLists.md): import text lists into JSON lists and maintain them in a Textual terminal UI.
 
 ## Scope
 
-- Persist per-user selections against catalogue identifiers.
-- Keep one user's list from affecting another.
-- Handle inactive or removed catalogue items predictably.
+- Import a text list into `output/<list>.json` with `groceries list import`.
+- Edit a JSON list (add, edit, activate/deactivate, remove, save) with
+  `groceries --ui`, using the shared OMP TUI theme.
+- Keep one user's list document from affecting another.
 - Keep list loading, modification, and saving testable without a UI.
+- Catalogue-linked lists are deferred (see the requirement).
 
 ## Status
 
-Ready to start. Requirement 002, the shared grocery catalogue, was completed on
-2026-08-24. The catalogue import path and versioned JSON document are in place.
+In progress on branch `feature/003-userShoppingLists`, started 2026-11-22.
+Sending a list to Tesco was renamed from `list add` to `list send` (ADR-003
+amendment). The list document model, `list import`, and the terminal UI are
+implemented with tests; review and acceptance remain.
 
 Use the [003 agent prompt](requirements/prompt/003-userShoppingLists.md) for implementation handoff.
 

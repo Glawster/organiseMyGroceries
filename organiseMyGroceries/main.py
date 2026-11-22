@@ -11,14 +11,15 @@ from organiseMyGroceries import __version__
 # Keep the log directory stable regardless of whether the CLI is launched as
 # the console script or as `python -m organiseMyGroceries`.
 APPLICATION_NAME = "organisemygroceries"
-DEFAULT_LIST_SOURCE = Path("shoppingList.json")
+# Imported lists live under output/, so every list command defaults there.
+DEFAULT_LIST_SOURCE = Path("output/shoppingList.json")
 
 setApplication(APPLICATION_NAME)
 logger = getLogger(includeConsole=False)
 
 # Application modules are imported only after the logging context is ready.
 from organiseMyGroceries.catalogue import catalogueImport
-from organiseMyGroceries.shoppingList import listExport, listLoad
+from organiseMyGroceries.shoppingList import listExport, listImport, listLoad
 from organiseMyGroceries.tesco import basketAdd
 
 ## public workflow
@@ -34,7 +35,17 @@ def cliBuildParser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--version", action="version", version=f"%(prog)s {__version__}"
     )
-    objects = parser.add_subparsers(dest="object", required=True)
+    parser.add_argument(
+        "--ui",
+        nargs="?",
+        const=DEFAULT_LIST_SOURCE,
+        default=None,
+        type=Path,
+        metavar="LIST",
+        help=f"open the terminal UI to edit a JSON list (default: {DEFAULT_LIST_SOURCE})",
+    )
+    # An object is required unless the terminal UI was requested instead.
+    objects = parser.add_subparsers(dest="object")
     _parserAddCatalogue(objects)
     _parserAddList(objects)
     return parser
@@ -45,10 +56,19 @@ def cliRun(arguments: Sequence[str] | None = None) -> int:
 
     global logger
 
-    args = cliBuildParser().parse_args(arguments)
+    parser = cliBuildParser()
+    args = parser.parse_args(arguments)
+    if args.ui is not None:
+        if args.object is not None:
+            parser.error("--ui cannot be combined with a command")
+        return _uiRun(args.ui)
+    if args.object is None:
+        parser.error("a command is required unless --ui is given")
+
     dryRun = not args.confirm
     logger = getLogger(includeConsole=True, dryRun=dryRun)
     logger.doing("starting")
+    logger.value("version", __version__)
     logger.value("object", args.object)
     logger.value("action", args.action)
     logger.value("source", args.source)
@@ -82,14 +102,42 @@ def _commandDispatch(args: argparse.Namespace, dryRun: bool) -> None:
     if args.action == "export":
         listExport(args.source, Path("output"), dryRun=dryRun)
         return
+    if args.action == "import":
+        listImport(args.source, Path("output"), dryRun=dryRun)
+        return
 
     items = listLoad(args.source, Path("output"), dryRun=dryRun)
     logger.value("items found", len(items))
     if dryRun:
         logger.info("preview complete; confirmation opens the grocery store")
         return
-    # Tesco is the current store adapter; list add stays store-neutral.
+    # Tesco is the current store adapter; list send stays store-neutral.
     basketAdd(items)
+
+
+def _uiRun(listPath: Path) -> int:
+    """Open the terminal UI on one JSON shopping list."""
+
+    global logger
+
+    # The UI owns the terminal, so log to file only while it runs.
+    logger = getLogger(includeConsole=False)
+    logger.doing("starting terminal UI")
+    logger.value("version", __version__)
+    logger.value("list", listPath)
+    try:
+        # Textual is imported only when the UI is requested so ordinary
+        # commands start quickly and stay scriptable.
+        from organiseMyGroceries.ui.listApp import ListApp
+
+        app = ListApp(listPath)
+    except (OSError, ValueError) as error:
+        print(f"groceries: error: {error}")
+        logger.error(str(error))
+        return 1
+    app.run()
+    logger.done("terminal UI closed")
+    return 0
 
 
 ## options
@@ -149,26 +197,41 @@ def _parserAddCatalogue(subparsers: Any) -> None:
 
 
 def _parserAddList(subparsers: Any) -> None:
-    """Add the list object and its add/export actions."""
+    """Add the list object and its import/send/export actions."""
 
     listParser = subparsers.add_parser("list", help="work with a shopping list")
     actions = listParser.add_subparsers(dest="action", required=True)
 
-    addParser = actions.add_parser("add", help="add active items to the grocery store")
+    importParser = actions.add_parser(
+        "import", help="import a text list into output/<source-name>.json"
+    )
     _optionSourceAdd(
-        addParser,
-        "JSON or text shopping-list path (default: shoppingList.json)",
+        importParser,
+        "one-item-per-line shopping-list text file",
+        required=True,
+    )
+    _optionConfirmAdd(
+        importParser,
+        "write output/<source-name>.json (default is dry-run)",
+    )
+
+    sendParser = actions.add_parser(
+        "send", help="send active items to the grocery store"
+    )
+    _optionSourceAdd(
+        sendParser,
+        f"JSON or text shopping-list path (default: {DEFAULT_LIST_SOURCE})",
         default=DEFAULT_LIST_SOURCE,
     )
     _optionConfirmAdd(
-        addParser,
+        sendParser,
         "open the grocery store and execute changes (default is dry-run)",
     )
 
     exportParser = actions.add_parser("export", help="export active JSON items as text")
     _optionSourceAdd(
         exportParser,
-        "JSON shopping-list path (default: shoppingList.json)",
+        f"JSON shopping-list path (default: {DEFAULT_LIST_SOURCE})",
         default=DEFAULT_LIST_SOURCE,
     )
     _optionConfirmAdd(

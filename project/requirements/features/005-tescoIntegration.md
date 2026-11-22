@@ -38,18 +38,18 @@ groceries store test <store>
 * Disabling a store must preserve its identity/configuration for existing references unless an explicit migration is performed.
 * Invalid or incomplete store configuration must fail clearly rather than silently falling back to Tesco.
 
-### Basket boundary
+### Sending a list to a store
 
-Store submission must use the `basket` object rather than overloading shopping-list commands:
+Store submission uses the `list send` action:
 
 ```text
-groceries basket preview --user <user> --store <store>
-groceries basket add --user <user> --store <store>
+groceries list send --user <user> --store <store>
+groceries list send --user <user> --store <store> --confirm
 ```
 
-* `basket preview` must be safe by default and must not modify an external basket.
+* `list send` without `--confirm` is a preview and must not modify an external basket.
 * Preview must identify the user list, target store, selected items, quantities where relevant, and the store action/search that would be attempted.
-* `basket add` is the explicit action that may interact with the external store.
+* `list send --confirm` is the only action that may interact with the external store.
 * A shopping-list `add` command means adding a catalogue item to a user's list; it must not mean sending a list to Tesco.
 * External-store failures must not modify the persisted user shopping list.
 
@@ -116,3 +116,4 @@ groceries basket add --user <user> --store <store>
 ## Change history
 
 * 2026-11-22: name corrected to follow documentation/requirementsManagement.md.
+* 2026-11-22: store submission changed from `basket preview`/`basket add` to `list send` (ADR-003 amendment).

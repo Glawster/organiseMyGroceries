@@ -1,3 +1,5 @@
 """Reusable grocery catalogue, shopping-list, and Tesco automation logic."""
 
-__version__ = "0.1"
+from organiseMyGroceries.version import __version__
+
+__all__ = ["__version__"]

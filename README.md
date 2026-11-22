@@ -23,8 +23,8 @@ The existing CLI remains the current implemented application while requirements 
 
 Requirements 001 (OMP alignment) and 002 (Grocery Catalogue) are complete. The
 shared catalogue can be imported from a plain-text grocery list and loaded
-without a UI. Requirement 003 (User Shopping Lists) is the next implementation
-increment.
+without a UI. Requirement 003 (User Shopping Lists) is in progress: text lists
+are imported into JSON and edited in a Textual terminal UI (`groceries --ui`).
 
 See [Current increment](project/currentIncrement.md) for the active scope and [Requirements and status](project/requirements/requirementsIndex.md) for the full backlog and agent prompts.
 
@@ -51,16 +51,24 @@ Preview a catalogue import without writing JSON:
 groceries catalogue import --source groceries.txt
 ```
 
-Preview a list without opening a store:
+Import a text shopping list into `output/shoppingList.json`, then edit it in
+the terminal UI:
 
 ```bash
-groceries list add --source shoppingList.json
+groceries list import --source shoppingList.txt --confirm
+groceries --ui
+```
+
+Preview the list without opening a store:
+
+```bash
+groceries list send
 ```
 
 After reviewing the item count, add the items with the current store adapter (Tesco):
 
 ```bash
-groceries list add --source shoppingList.json --confirm
+groceries list send --confirm
 ```
 
 Authentication for the existing Playwright workflow remains a manual browser step. See the [user guide](documentation/userGuide.md) for formats, export commands, and failure behaviour.
